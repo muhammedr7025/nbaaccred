@@ -1,11 +1,26 @@
 import { TBody, TBodyCell, TBodyRow, THeadCell, THeadRow, Table, Thead } from '@/components/table/table'
+import { BoxLayout } from '../boxLayout'
+import { TopBar } from '@/components/TopBar'
+import { Button } from '@/components/buttons/default'
+import { DownloadIcon } from '@/assets/SvgTsx/download'
+import { Pagination } from '@/components/Pagination'
 const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "Maths", "Average", "Higher Secondary", "KEAM", "College Rank", "Proof", "Remark", "Batch", "Department",
     "Action"]
 export const Student = () => {
     return (
-        <main className="flex-1 overflow-y-auto p-4 grid gap-4 md:p-6 lg:p-8">
-            <div className="border rounded-lg p-4 grid gap-4">
-                <div className="relative w-full overflow-auto">
+        <>
+            <BoxLayout
+                topBar={<TopBar name='Staff'>
+                    <Button>Add Staff</Button>
+                    <Button>Import</Button>
+                    <Button>Export</Button>
+                    <Button>Print</Button>
+                    <Button className='flex gap-2'>
+                        <DownloadIcon />
+                        CSV
+                    </Button>
+                </TopBar>}
+                table={
                     <Table>
                         <Thead>
                             <THeadRow>
@@ -27,10 +42,8 @@ export const Student = () => {
                             </TBodyRow>
                         </TBody>
                     </Table>
-
-                </div>
-
-            </div>
-        </main>
+                }
+                pagination={<Pagination start={1} total={5} />}
+            /></>
     )
 }

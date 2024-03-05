@@ -1,10 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import styles from './layout.module.css'
 export const DashboardLayout = () => {
     return (
         <div className='flex'>
-
             <SideNavigation />
             <div className=' flex flex-col flex-1'>
                 <TopNavigation />
@@ -13,6 +11,7 @@ export const DashboardLayout = () => {
         </div>
     )
 }
+
 const sideNavigationMenu = [
     { url: '/dashboard/student', name: 'Student' },
     // { url: '/dashboard/batch', name: 'Batch' },
@@ -48,7 +47,9 @@ const TopNavigation = () => {
     )
 }
 const SideNavigation = () => {
-    const [isOpen, setIsOpen] = useState(false)
+    const location = useLocation().pathname
+    const item = sideNavigationMenu.find(item => item.url === location)
+
     return (
         <aside className={`flex flex-col sticky top-0 h-screen w-56 bg-gray-100 text-gray-800 p-4  overflow-hidden`}
         >
@@ -61,8 +62,8 @@ const SideNavigation = () => {
                 sideNavigationMenu.map(({ url, name }, index) =>
                     <Link to={url} key={index}>
                         <nav className="space-y-2" >
-
-                            <button className="w-full flex items-center space-x-2 hover:bg-gray-200 active:bg-gray-300 py-2 px-2 rounded-lg text-gray-500">
+                            <button className={`w-full flex items-center space-x-2
+                             hover:bg-gray-200 active:bg-gray-300 py-2 px-2 rounded-lg text-gray-500 ${item?.url === url ? ' bg-white' : ''} `}>
                                 <span className="text-sm font-medium" >{name}</span>
                             </button>
                         </nav>
@@ -72,3 +73,4 @@ const SideNavigation = () => {
         </aside>
     )
 }
+
