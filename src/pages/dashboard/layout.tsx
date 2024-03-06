@@ -1,15 +1,19 @@
+import { useAuth } from '@/components/AuthContext'
 import React from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 export const DashboardLayout = () => {
-    return (
-        <div className='flex'>
-            <SideNavigation />
-            <div className=' flex flex-col flex-1'>
-                <TopNavigation />
-                <Outlet />
+    const { isLoggedIn } = useAuth()
+    if (isLoggedIn)
+        return (
+            <div className='flex'>
+                <SideNavigation />
+                <div className=' flex flex-col flex-1'>
+                    <TopNavigation />
+                    <Outlet />
+                </div>
             </div>
-        </div>
-    )
+        )
+    else return <Navigate to="/login" />
 }
 
 const sideNavigationMenu = [

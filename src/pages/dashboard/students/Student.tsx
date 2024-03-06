@@ -7,6 +7,7 @@ import { Pagination } from '@/components/Pagination'
 const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "Maths", "Average", "Higher Secondary", "KEAM", "College Rank", "Proof", "Remark", "Batch", "Department",
     "Action"]
 export const Student = () => {
+
     return (
         <>
             <BoxLayout
