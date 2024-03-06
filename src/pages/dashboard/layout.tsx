@@ -1,5 +1,5 @@
 import { useAuth } from '@/components/AuthContext'
-import React from 'react'
+import React, { useRef } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 export const DashboardLayout = () => {
     const { isLoggedIn } = useAuth()
@@ -24,29 +24,35 @@ const sideNavigationMenu = [
 ]
 
 const TopNavigation = () => {
+    const { user, logout } = useAuth()
     const location = useLocation().pathname
     const value = sideNavigationMenu.find(item => item.url === location)
+    const ref = useRef<HTMLDivElement>(null)
     return (
-        <header className="flex items-center justify-between h-14 px-4 border-b lg:h-20 gap-4 dark:border-gray-800">
+        <header className="flex items-center justify-between h-14 px-4 border-b lg:h-20 gap-4 dark:border-gray-800" ref={ref}>
             <div></div>
             <h1 className="font-semibold text-lg lg:text-2xl ">{value?.name}</h1>
-            <button
-                className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground rounded-full border border-gray-200 w-8 h-8 dark:border-gray-800"
-                type="button"
-                id="radix-:r0:"
-                aria-haspopup="menu"
-                aria-expanded="false"
-                data-state="closed"
-            >
-                <img
-                    alt="Avatar"
-                    className="rounded-full aspect-square object-cover"
-                    height="32"
-                    src="https://i.pinimg.com/736x/a1/ba/8c/a1ba8ca957c5e60767d42dce30d94105.jpg"
-                    width="32"
-                />
-                <span className="sr-only">Toggle user menu</span>
-            </button>
+            <div className='flex items-center gap-2'>
+                <button
+                    className="relative inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground rounded-full border border-gray-200 w-8 h-8 dark:border-gray-800"
+                    type="button"
+                    id="radix-:r0:"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    data-state="closed"
+                >
+                    <img
+                        alt="Avatar"
+                        className="rounded-full aspect-square object-cover"
+                        height="32"
+                        src="https://i.pinimg.com/736x/a1/ba/8c/a1ba8ca957c5e60767d42dce30d94105.jpg"
+                        width="32"
+                    />
+                    <span className="sr-only">Toggle user menu</span>
+                </button>
+                <span>{user?.email}</span>
+                <button onClick={logout}>Logout</button>
+            </div>
         </header>
     )
 }
