@@ -1,6 +1,6 @@
 import { useAuth } from '@/components/AuthContext'
 import { useRef } from 'react'
-import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 export const DashboardLayout = () => {
     const { isLoggedIn, isLoading } = useAuth()
     const path = useLocation().pathname
