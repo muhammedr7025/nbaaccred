@@ -1,13 +1,19 @@
 
 import { Navigate, Outlet, RouteObject } from "react-router-dom";
 import dashboard from "./dashboard";
-import { AuthProvider } from "@/components/AuthContext";
+import { AuthProvider, useAuth } from "@/components/AuthContext";
 import { Login } from "@/pages/auth/login";
+const RouteOptions = () => {
+    const { isLoggedIn } = useAuth()
+    if (isLoggedIn) {
+        return <Navigate to="/dashboard/student" />
+    }
+    else return <Navigate to="/login" />
+}
 const Layout = () => {
-
     return (
         <AuthProvider>
-            <Navigate to="/dashboard/student" />
+            <RouteOptions />
             <Outlet />
         </AuthProvider>
     )
@@ -24,6 +30,10 @@ const Home: RouteObject = {
         }
     ],
 }
-const root: RouteObject[] = [Home]
+const Error: RouteObject = {
+    path: '*',
+    element: <Navigate to="/" />
+}
+const root: RouteObject[] = [Home, Error]
 export default root
 

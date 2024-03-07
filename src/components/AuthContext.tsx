@@ -8,10 +8,12 @@ type IAuthContext = {
     logout: () => void,
     register: ({ username, email, password }: { username: string, email: string, password: string }) => void
     user: any
+    isLoading: boolean
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const [isLoading, setIsLoading] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState({});
     const navigate = useNavigate();
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (user) {
             setUser(JSON.parse(user))
         }
+        setIsLoading(false);
     }, [])
     function login(email: string, password: string) {
         apiClient.post('/auth/local', {
@@ -45,8 +48,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     function logout() {
         localStorage.setItem('isLoggedIn', JSON.stringify(false))
-
         setIsLoggedIn(false)
+        localStorage.clear()
+        navigate('/login')
     }
     function register({ username, email, password }: { username: string, email: string, password: string }) {
         apiClient.post('/auth/local/register', {
@@ -63,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             })
     }
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout, register, user }}>
+        <AuthContext.Provider value={{ isLoading, isLoggedIn, login, logout, register, user }}>
             {children}
         </AuthContext.Provider>
     )

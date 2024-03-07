@@ -3,5 +3,6 @@ import { RouteObject } from "react-router-dom";
 
 export const staff: RouteObject = {
     path: "staff",
-    element: <Staff />
+    element: <Staff />,
+
 }

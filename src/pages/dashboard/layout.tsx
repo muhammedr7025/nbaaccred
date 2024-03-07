@@ -1,9 +1,14 @@
 import { useAuth } from '@/components/AuthContext'
 import { useRef } from 'react'
-import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 export const DashboardLayout = () => {
-    const { isLoggedIn } = useAuth()
-    if (isLoggedIn)
+    const { isLoggedIn, isLoading } = useAuth()
+    const path = useLocation().pathname
+    if (isLoading) return null
+
+    else if (isLoggedIn) {
+
+        if (path === "/dashboard/" || path === "/dashboard") return <Navigate to="/dashboard/student" replace />
         return (
             <div className='flex'>
                 <SideNavigation />
@@ -13,7 +18,8 @@ export const DashboardLayout = () => {
                 </div>
             </div>
         )
-    else return <Navigate to="/login" />
+    }
+    return <Navigate to="/login" />
 }
 
 const sideNavigationMenu = [
@@ -50,7 +56,7 @@ const TopNavigation = () => {
                     />
                     <span className="sr-only">Toggle user menu</span>
                 </button>
-                <span>{user?.email}</span>
+                <span>{user?.username}</span>
                 <button onClick={logout}>Logout</button>
             </div>
         </header>
