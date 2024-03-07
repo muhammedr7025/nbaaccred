@@ -1,5 +1,4 @@
 import { useAuth } from "@/components/AuthContext";
-import { log } from "console";
 import React from "react";
 import { Navigate } from "react-router-dom";
 
@@ -13,9 +12,9 @@ export function Login() {
         login(email, password);
     };
 
-    const handleGoogleLogin = () => {
-        // Add your Google login logic here
-    };
+    // const handleGoogleLogin = () => {
+    //     // Add your Google login logic here
+    // };
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">

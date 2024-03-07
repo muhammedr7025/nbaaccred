@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         apiClient.post('/auth/local', {
             identifier: email,
             password: password
-        }).then((res) => {
+        }).then((res: any) => {
             setUser(res.data.user)
             localStorage.setItem('user', JSON.stringify(res.data.user))
             localStorage.setItem('isLoggedIn', JSON.stringify(true))
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setIsLoggedIn(true);
             navigate('/dashboard/student')
         })
-            .catch((err) => {
+            .catch((err: Error) => {
                 console.log(err)
             })
     }
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             email: email,
             password: password
         })
-            .then((res) => {
+            .then(() => {
                 login(email, password)
                 navigate('/dashboard/student')
             })

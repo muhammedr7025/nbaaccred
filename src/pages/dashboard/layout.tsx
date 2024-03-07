@@ -1,5 +1,5 @@
 import { useAuth } from '@/components/AuthContext'
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 export const DashboardLayout = () => {
     const { isLoggedIn } = useAuth()
