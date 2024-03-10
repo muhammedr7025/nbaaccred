@@ -1,21 +1,27 @@
 import { Navigate, RouteObject } from "react-router-dom";
-
-import { staff } from "./staff";
 import { DashboardLayout } from "@/pages/dashboard/layout";
-import { student } from "./student";
+import { Student } from "@/pages/dashboard/students/Student";
+import { Staff } from "@/pages/dashboard/staff";
 const Page404 = () => <Navigate to="/dashboard/student" />
-const error = {
-    path: "*",
-    element: <Page404 />
-}
+
 const dashboard: RouteObject = {
     path: "dashboard",
     element: <DashboardLayout />,
 
     children: [
-        staff,
-        student,
-        error
+        {
+            path: "staff",
+            element: <Staff />,
+            caseSensitive: false
+        },
+        {
+            path: "student",
+            element: <Student />
+        },
+        {
+            path: "*",
+            element: <Page404 />
+        }
     ]
 }
 export default dashboard

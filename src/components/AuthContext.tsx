@@ -1,7 +1,6 @@
 import { supabase } from "@/utils/supbase/supabaseClient";
 import { Session } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 
 type IAuthContext = {
     isLoading: boolean
@@ -79,14 +78,3 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 }
 
 export const useAuth = () => useContext(AuthContext)
-
-export function CheckIfAuthenticated({ children }: { children: React.ReactNode }): JSX.Element {
-    const { isLoading, session } = useAuth()
-    if (session && isLoading) return <></>
-    else if (session) return <Navigate to="/dashboard/student" />
-    else return (
-        <>
-            {children}
-        </>
-    )
-}

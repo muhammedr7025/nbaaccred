@@ -1,19 +1,20 @@
 
 import { Navigate, RouteObject } from "react-router-dom";
-import dashboard from "./dashboard";
-import { publicRoutes } from "./public";
+import dashboardRoutes from "./dashboard";
+import publicRoutes from "./public";
 
 
-const Home: RouteObject = {
-    path: "/",
-    element: <Navigate to="/login" />,
-}
-
-
-const Error: RouteObject = {
-    path: '*',
-    element: <Navigate to="/" />
-}
-const root: RouteObject[] = [Home, publicRoutes, dashboard, Error]
+const root: RouteObject[] = [
+    {
+        path: '*',
+        element: <Navigate to="/" />
+    },
+    {
+        path: '*',
+        element: <Navigate to="/" />
+    },
+    dashboardRoutes,
+    publicRoutes,
+]
 export default root
 
