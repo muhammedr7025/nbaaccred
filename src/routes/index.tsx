@@ -7,11 +7,7 @@ import publicRoutes from "./public";
 const root: RouteObject[] = [
     {
         path: '*',
-        element: <Navigate to="/" />
-    },
-    {
-        path: '*',
-        element: <Navigate to="/" />
+        element: <Navigate to="/login" />
     },
     dashboardRoutes,
     publicRoutes,

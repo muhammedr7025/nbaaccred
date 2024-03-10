@@ -5,6 +5,10 @@ import { Button } from '@/components/buttons/default'
 import { TBody, TBodyCell, TBodyRow, THeadCell, THeadRow, Table, Thead } from '@/components/table/table'
 import { staffHeaderType, staffType } from '@/types/tables'
 import { BoxLayout } from '../boxLayout'
+import React from 'react'
+import { useModal } from '@/components/modal'
+import { Input } from '@/components/inputs/input'
+import { Option, Select } from '@/components/select/select'
 
 const header: staffHeaderType[] = ["Department", "Name", "Mobile", "Email", "Advisor", "Batch", "Action"]
 const data: staffType[] = [{
@@ -18,10 +22,18 @@ const data: staffType[] = [{
     delete: () => { }
 }]
 export const Staff = () => {
+    const { Modal, open, close, toggle } = useModal({ fadeTime: 300, title: "Add Staff" })
+    function ModalLayout() {
+        return (
+            <Modal  >
+                <ModalBox />
+            </Modal>
+        )
+    }
     return (
         <BoxLayout
             topBar={
-                <TopBarSection />
+                <TopBarSection openModal={open} />
             }
             table={
                 <TableSection />
@@ -29,22 +41,68 @@ export const Staff = () => {
             pagination={
                 <Pagination start={1} total={5} />
             }
+            modal={<ModalLayout />}
         />
 
     )
 }
-const TopBarSection = () => {
+const TopBarSection = ({ openModal }: { openModal: () => void }) => {
     return (
         <TopBar name='Staff' >
-            <Button>Add Staff</Button>
+            <Button onClick={openModal}>Add Staff</Button>
             <Button>Import</Button>
-            <Button>Export</Button>
-            <Button>Print</Button>
             <Button className='flex gap-2'>
                 <DownloadIcon />
                 CSV
             </Button>
         </TopBar>
+    )
+}
+const ModalBox = () => {
+    return (
+        <form>
+            <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
+                <div className='flex w-full gap-3'>
+                    <Input placeholder='Enter name'>Name</Input>
+                    <Input placeholder='Enter email' >Email</Input>
+                </div>
+                <div className='flex w-full gap-3'>
+                    <Input placeholder='Enter mobile'>Mobile</Input>
+                    <Select header='Gender' >
+                        <Option>Male</Option>
+                        <Option>Female</Option>
+                        <Option>Other</Option>
+                    </Select>
+
+                </div>
+                <div className='flex w-full gap-3'>
+
+                    <Select header='Department'>
+                        <Option>Department</Option>
+                        <Option>Physics</Option>
+                    </Select>
+                    <Select header='Batch' >
+                        <Option>Department</Option>
+                        <Option>Physics</Option>
+                    </Select>
+                </div>
+                <div className='flex w-full gap-3'>
+                    <Select header='Is Advisor' >
+                        <Option>Yes</Option>
+                        <Option>No</Option>
+                    </Select>
+                    <div className=' flex-1'></div>
+                </div>
+                <div className='flex w-full gap-3 py-7'>
+                    <Button className='flex-1 hover:bg-green-500 hover:text-white active: '>
+                        Save
+                    </Button>
+                    <Button className='flex-1 hover:bg-red-500 hover:text-white '>
+                        Cancel
+                    </Button>
+                </div>
+            </div>
+        </form>
     )
 }
 const TableSection = () => {

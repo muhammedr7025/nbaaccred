@@ -2,27 +2,30 @@ import { useAuth } from '@/components/AuthContext'
 import { useRef } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 export const DashboardLayout = () => {
-    const { session, isLoading } = useAuth()
-    console.log(session, isLoading)
-    if (isLoading) return null
-    else if (session) {
-        return (
-            <div className='flex'>
+
+    return (
+        <IsAuthenticated>
+            <div className='flex relative'>
                 <SideNavigation />
-                <div className=' flex flex-col flex-1'>
+                <div className=' flex flex-col flex-1 relative'>
                     <TopNavigation />
                     <Outlet />
                 </div>
             </div>
-        )
-    }
-    return <Navigate to="/login" />
+        </IsAuthenticated>
+    )
 }
 
+function IsAuthenticated({ children }: { children: React.ReactNode }): JSX.Element {
+    const { session, isLoading } = useAuth()
+    if (session && isLoading) return <></>
+    else if (session) return (<>{children}</>)
+    else return <Navigate to="/login" />
+}
 const sideNavigationMenu = [
     { url: '/dashboard/student', name: 'Student' },
-    // { url: '/dashboard/batch', name: 'Batch' },
-    // { url: '/dashboard/department', name: 'Department' },
+    { url: '/dashboard/batch', name: 'Batch' },
+    { url: '/dashboard/department', name: 'Department' },
     { url: '/dashboard/staff', name: 'Staff' },
 ]
 
@@ -64,25 +67,25 @@ const SideNavigation = () => {
     const item = sideNavigationMenu.find(item => item.url === location)
 
     return (
-        <aside className={`flex flex-col sticky top-0 h-screen w-56 bg-gray-100 text-gray-800 p-4  overflow-hidden`}
+        <aside className={`flex flex-col sticky top-0 h-screen w-40 bg-gray-100 text-gray-800 p-4  overflow-hidden`}
         >
-            <div className={`flex items-center mb-4 space-x-1  overflow-hidden`}
-
-            >
+            <div className={`flex items-center mb-4  overflow-hidden`}>
                 <h1 className="text-lg font-medium">Dashboard</h1>
             </div>
-            {
-                sideNavigationMenu.map(({ url, name }, index) =>
-                    <Link to={url} key={index}>
-                        <nav className="space-y-2" >
-                            <button className={`w-full flex items-center space-x-2
+            <aside className=" flex flex-col gap-2">
+                {
+                    sideNavigationMenu.map(({ url, name }, index) =>
+                        <Link to={url} key={index}>
+                            <nav  >
+                                <button className={`w-full flex items-center space-x-2 
                              hover:bg-gray-200 active:bg-gray-300 py-2 px-2 rounded-lg text-gray-500 ${item?.url === url ? ' bg-white' : ''} `}>
-                                <span className="text-sm font-medium" >{name}</span>
-                            </button>
-                        </nav>
-                    </Link>
-                )
-            }
+                                    <span className="text-sm font-medium" >{name}</span>
+                                </button>
+                            </nav>
+                        </Link>
+                    )
+                }
+            </aside>
         </aside>
     )
 }
