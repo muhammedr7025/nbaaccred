@@ -2,13 +2,10 @@ import { useAuth } from '@/components/AuthContext'
 import { useRef } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 export const DashboardLayout = () => {
-    const { isLoggedIn, isLoading } = useAuth()
-    const path = useLocation().pathname
+    const { session, isLoading } = useAuth()
+    console.log(session, isLoading)
     if (isLoading) return null
-
-    else if (isLoggedIn) {
-
-        if (path === "/dashboard/" || path === "/dashboard") return <Navigate to="/dashboard/student" replace />
+    else if (session) {
         return (
             <div className='flex'>
                 <SideNavigation />
@@ -30,7 +27,7 @@ const sideNavigationMenu = [
 ]
 
 const TopNavigation = () => {
-    const { user, logout } = useAuth()
+    const { signOut } = useAuth()
     const location = useLocation().pathname
     const value = sideNavigationMenu.find(item => item.url === location)
     const ref = useRef<HTMLDivElement>(null)
@@ -56,8 +53,8 @@ const TopNavigation = () => {
                     />
                     <span className="sr-only">Toggle user menu</span>
                 </button>
-                <span>{user?.username}</span>
-                <button onClick={logout}>Logout</button>
+                <span>{''}</span>
+                <button onClick={signOut}>Logout</button>
             </div>
         </header>
     )

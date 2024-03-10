@@ -4,19 +4,18 @@ import { staff } from "./staff";
 import { DashboardLayout } from "@/pages/dashboard/layout";
 import { student } from "./student";
 const Page404 = () => <Navigate to="/dashboard/student" />
-
+const error = {
+    path: "*",
+    element: <Page404 />
+}
 const dashboard: RouteObject = {
     path: "dashboard",
     element: <DashboardLayout />,
-    caseSensitive: false,
-    hydrateFallbackElement: <div>Loading...</div>,
+
     children: [
         staff,
         student,
-        {
-            path: "*",
-            element: <Page404 />
-        }
+        error
     ]
 }
 export default dashboard

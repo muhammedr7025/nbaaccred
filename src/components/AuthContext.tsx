@@ -1,76 +1,92 @@
-import { apiClient } from "@/utils/apiClient";
+import { supabase } from "@/utils/supbase/supabaseClient";
+import { Session } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 type IAuthContext = {
-    isLoggedIn: boolean,
-    login: (email: string, password: string) => void,
-    logout: () => void,
-    register: ({ username, email, password }: { username: string, email: string, password: string }) => void
-    user: any
     isLoading: boolean
+    session: Session | null
+    handleSignIn: (email: string, password: string) => void
+    handleSignUp: (event: Event) => void
+    signOut: () => void
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
-
+type target = {
+    value: string
+}
+type auth = {
+    email: target,
+    password: target,
+    name: target,
+    phone: target
+}
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState({});
-    const navigate = useNavigate();
+    const [isLoading, setLoading] = useState(true)
+    const [session, setSession] = useState<Session | null>(null)
+
     useEffect(() => {
-        const isLoggedIn = localStorage.getItem('isLoggedIn')
-        const user = localStorage.getItem('user')
-        if (isLoggedIn) {
-            const value = JSON.parse(isLoggedIn)
-            if (value)
-                setIsLoggedIn(true);
+        if (session) {
+            setLoading(false)
         }
-        if (user) {
-            setUser(JSON.parse(user))
-        }
-        setIsLoading(false);
+    }, [session])
+    useEffect(() => {
+        setLoading(true)
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session)
+        })
+        supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session)
+        })
     }, [])
-    function login(email: string, password: string) {
-        apiClient.post('/auth/local', {
-            identifier: email,
-            password: password
-        }).then((res: any) => {
-            setUser(res.data.user)
-            localStorage.setItem('user', JSON.stringify(res.data.user))
-            localStorage.setItem('isLoggedIn', JSON.stringify(true))
-            localStorage.setItem('token', res.data.jwt)
-            setIsLoggedIn(true);
-            navigate('/dashboard/student')
-        })
-            .catch((err: Error) => {
-                console.log(err)
+
+    const signOut = () => {
+        supabase.auth.signOut()
+        console.log(session, supabase.auth.getSession())
+        setSession(null)
+    }
+
+    const handleSignIn = async (email: string, password: string) => {
+        supabase.auth.signInWithPassword({ email, password })
+            .then((data) => {
+                setSession(data.data.session)
+            })
+            .catch((error) => {
+                console.log(error)
             })
     }
-    function logout() {
-        localStorage.setItem('isLoggedIn', JSON.stringify(false))
-        setIsLoggedIn(false)
-        localStorage.clear()
-        navigate('/login')
-    }
-    function register({ username, email, password }: { username: string, email: string, password: string }) {
-        apiClient.post('/auth/local/register', {
-            username: username,
-            email: email,
-            password: password
-        })
-            .then(() => {
-                login(email, password)
-                navigate('/dashboard/student')
-            })
-            .catch((err) => {
-                console.log(err)
-            })
+
+    const handleSignUp = async (event: Event) => {
+        event.preventDefault()
+        const { email, password, name, phone }: auth = event.currentTarget as any
+        supabase.auth.signUp(
+            {
+                email: email.value,
+                password: password.value,
+                options: {
+                    data: {
+                        name: name.value,
+                        phone: phone.value,
+                    }
+                }
+            }
+        )
     }
     return (
-        <AuthContext.Provider value={{ isLoading, isLoggedIn, login, logout, register, user }}>
+        <AuthContext.Provider value={{ isLoading, handleSignIn, handleSignUp, session, signOut }}>
             {children}
         </AuthContext.Provider>
     )
 }
 
 export const useAuth = () => useContext(AuthContext)
+
+export function CheckIfAuthenticated({ children }: { children: React.ReactNode }): JSX.Element {
+    const { isLoading, session } = useAuth()
+    if (session && isLoading) return <></>
+    else if (session) return <Navigate to="/dashboard/student" />
+    else return (
+        <>
+            {children}
+        </>
+    )
+}
