@@ -5,7 +5,6 @@ import { Button } from '@/components/buttons/default'
 import { TBody, TBodyCell, TBodyRow, THeadCell, THeadRow, Table, Thead } from '@/components/table/table'
 import { staffHeaderType, staffType } from '@/types/tables'
 import { BoxLayout } from '../boxLayout'
-import React from 'react'
 import { useModal } from '@/components/modal'
 import { Input } from '@/components/inputs/input'
 import { Option, Select } from '@/components/select/select'
@@ -22,7 +21,7 @@ const data: staffType[] = [{
     delete: () => { }
 }]
 export const Staff = () => {
-    const { Modal, open, close, toggle } = useModal({ fadeTime: 300, title: "Add Staff" })
+    const { Modal, open } = useModal({ fadeTime: 300, title: "Add Staff" })
     function ModalLayout() {
         return (
             <Modal  >

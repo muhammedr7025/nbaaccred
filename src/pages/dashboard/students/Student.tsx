@@ -7,12 +7,12 @@ import { Pagination } from '@/components/Pagination'
 import { Input } from '@/components/inputs/input'
 import { Option, Select } from '@/components/select/select'
 import { useModal } from '@/components/modal'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useAuth } from '@/components/AuthContext'
 const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "Maths", "Average", "Higher Secondary", "KEAM", "College Rank", "Proof", "Remark", "Batch", "Department",
     "Action"]
 export const Student = () => {
-    const { Modal, open, close, toggle } = useModal({ fadeTime: 300, title: "Add Staff" })
+    const { Modal, open, close, } = useModal({ fadeTime: 300, title: "Add Staff" })
 
     return (
         <>
@@ -85,7 +85,7 @@ const ModalBox = ({ close }: { close: () => void }) => {
             extras: {
                 ...data
             }
-        }).then((res) => {
+        }).then(() => {
             console.log('success',)
         })
     }
