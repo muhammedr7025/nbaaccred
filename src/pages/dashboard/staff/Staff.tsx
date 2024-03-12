@@ -16,25 +16,15 @@ const header: staffHeaderType[] = ["Department", "Name", "Mobile", "Email", "Adv
     //  "Batch", 
     // "Action"
 ]
-const data: staffType[] = [{
-    department: "Physics",
-    name: "Dr. A. K. Singh",
-    mobile: "9876543210",
-    email: "aksingh@example.com",
-    advisor: true,
-    batch: 2023,
 
-}]
 export const Staff = () => {
+    const { staff: staffList } = useAuth()
     const { Modal, open, close } = useModal({ fadeTime: 300, title: "Add Staff" })
-    const [staff, setStaff] = React.useState<any>([])
-    useEffect(() => {
-        getStaff().then(setStaff)
-    }, [])
+    const staff = staffList.get()
     function ModalLayout() {
         return (
             <Modal  >
-                <ModalBox setStaff={setStaff} close={close} />
+                <ModalBox close={close} />
             </Modal>
         )
     }
@@ -55,8 +45,13 @@ export const Staff = () => {
     )
 }
 const TopBarSection = ({ openModal }: { openModal: () => void }) => {
+    const { staff } = useAuth()
+    function getStaff() {
+        getStaffFromDB().then(staff.set)
+    }
     return (
         <TopBar name='Staff' >
+            <Button onClick={getStaff}>Reload</Button>
             <Button onClick={openModal}>Add Staff</Button>
             <Button>Import</Button>
             <Button className='flex gap-2'>
@@ -66,54 +61,17 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
         </TopBar>
     )
 }
-const ModalBox = ({ setStaff, close }: { setStaff: React.Dispatch<React.SetStateAction<any[]>>, close: () => void }) => {
-    const { departments, genders, roles } = useAuth()
+const ModalBox = ({ close }: { close: () => void }) => {
+    const { departments, genders, roles, staff } = useAuth()
     function closer() {
         close()
-        getStaff().then(setStaff)
+        getStaff()
     }
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const e: any = event
-        const userData = {
-            name: e.currentTarget['name'].value as string,
-            email: e.currentTarget['email']?.value as string,
-            phone: e.currentTarget['mobile']?.value as string,
-            gender: e.currentTarget['gender'].options[e.currentTarget['gender'].selectedIndex].id as string,
-            role_id: roles.find((role) => role.name === "staff")?.id
-        }
-        const data = {
-            dept_id: e.currentTarget['department'].options[e.currentTarget['department'].selectedIndex].id as string,
-            is_advisor: e.currentTarget['advisor'].options[e.currentTarget['advisor'].selectedIndex].value?.toLowerCase() === "yes" ? true : false,
-        }
-        const staffData = (userId: string) => ({
-            ...data,
-            user_id: userId
-        })
-        supabase
-            .from('users')
-            .insert(userData)
-            .select('id')
-            .then((res: any) => {
-                const userId = res ? res.data[0].id : null
-                if (userId)
-                    supabase.from('staff')
-                        .insert(staffData(userId))
-                        .select('user_id')
-                        .then((res) => {
-                            if (res) {
-                                if (data.is_advisor)
-                                    supabase.from('advisors')
-                                        .insert({ user_id: userId })
-                                        .select('user_id')
-                                        .then(closer)
-                                else closer()
-                            }
-                        })
-            })
+    function getStaff() {
+        getStaffFromDB().then(staff.set)
     }
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(roles, closer)}>
             <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
                 <div className='flex w-full gap-3'>
                     <Input id='name' placeholder='Enter name'>Name</Input>
@@ -180,15 +138,76 @@ const TableSection = ({ staff }: any) => {
     )
 }
 
-function getStaff() {
+export async function getStaff() {
+    const data = sessionStorage.getItem('staff')
+    if (data) {
+        const staff = JSON.parse(data)
+        return Promise.resolve(staff)
+    }
+    return getStaffFromDB()
+}
+async function getStaffFromDB() {
     return supabase.from('staff').select(`is_advisor,users(name,phone,email),departments(code)`)
         .then((res: any) => {
-            return (res.data.map((item: any) => ({
+            const data = res.data.map((item: any) => ({
                 ...item,
                 name: item.users.name,
                 phone: item.users.phone,
                 email: item.users.email,
                 dept: item.departments.code
-            })))
+            }))
+            if (data.length > 0)
+                sessionStorage.setItem('staff', JSON.stringify(data))
+            return data
         })
+}
+function handleSubmit(roles: any, closer: () => void) {
+    return (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const e: any = event
+        const userData = {
+            name: e.currentTarget['name'].value as string,
+            email: e.currentTarget['email']?.value as string,
+            phone: e.currentTarget['mobile']?.value as string,
+            gender: e.currentTarget['gender'].options[e.currentTarget['gender'].selectedIndex].id as string,
+            role_id: roles.find((role: any) => role.name === "staff")?.id
+        }
+        const data = {
+            dept_id: e.currentTarget['department'].options[e.currentTarget['department'].selectedIndex].id as string,
+            is_advisor: e.currentTarget['advisor'].options[e.currentTarget['advisor'].selectedIndex].value?.toLowerCase() === "yes" ? true : false,
+        }
+        supabase
+            .from('users')
+            .insert(userData)
+            .select('id')
+            .then(addStaff(data, closer))
+    }
+}
+function addStaff(data: any, closer: () => void) {
+    return (res: any) => {
+        const userId = res ? res.data[0].id : null
+        if (userId)
+            supabase.from('staff')
+                .insert(staffData(userId, data))
+                .select('user_id')
+                .then(addIfAdvisor(data.is_advisor, userId, closer))
+    }
+}
+function addIfAdvisor(is_advisor: boolean, userId: string, closer: () => void) {
+    return (res: any) => {
+        if (res) {
+            if (is_advisor)
+                supabase.from('advisors')
+                    .insert({ user_id: userId })
+                    .select('user_id')
+                    .then(closer)
+            else closer()
+        }
+    }
+}
+function staffData(userId: string, data: any) {
+    return ({
+        ...data,
+        user_id: userId
+    })
 }

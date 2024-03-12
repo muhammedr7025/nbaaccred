@@ -17,9 +17,13 @@ export const DashboardLayout = () => {
 }
 
 function IsAuthenticated({ children }: { children: React.ReactNode }): JSX.Element {
+    const path = useLocation().pathname
     const { session, isLoading } = useAuth()
-    if (session && isLoading) return <></>
-    else if (session) return (<>{children}</>)
+    if (isLoading) return <></>
+    else if (session) {
+        if (path === '/dashboard' || path === '/dashboard/') return <Navigate to="/dashboard/student" />
+        return (<>{children}</>)
+    }
     else return <Navigate to="/login" />
 }
 const sideNavigationMenu = [

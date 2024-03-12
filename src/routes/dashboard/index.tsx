@@ -7,7 +7,6 @@ const Page404 = () => <Navigate to="/dashboard/student" />
 const dashboard: RouteObject = {
     path: "dashboard",
     element: <DashboardLayout />,
-
     children: [
         {
             path: "staff",
