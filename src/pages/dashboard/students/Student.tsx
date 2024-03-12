@@ -19,19 +19,7 @@ export const Student = () => {
     useEffect(() => {
         getStudents().then(setStudent)
     }, [])
-    function getStudents() {
-        return supabase.from('students').select(`*,users(name,gender(name),phone),batch(start_year,end_year),departments(name)`)
-            .then((res: any) => {
-                return (res.data.map((item: any) => ({
-                    ...item,
-                    name: item.users.name,
-                    gender: item.users.gender.name,
-                    batch: item.batch.start_year + "-" + item.batch.end_year,
-                    department: item.departments.name,
-                    phone: item.users.phone,
-                })))
-            })
-    }
+
     return (
         <>
             <BoxLayout
@@ -83,11 +71,11 @@ export const Student = () => {
                     </Table>
                 }
                 pagination={<Pagination start={1} total={5} />}
-                modal={<Modal><ModalBox close={close} /></Modal>}
+                modal={<Modal><ModalBox close={close} setStudent={setStudent} /></Modal>}
             /></>
     )
 }
-const ModalBox = ({ close }: { close: () => void }) => {
+const ModalBox = ({ close, setStudent }: { close: () => void, setStudent: React.Dispatch<React.SetStateAction<any[]>> }) => {
     const { batchs, departments, genders, roles } = useAuth()
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -127,6 +115,7 @@ const ModalBox = ({ close }: { close: () => void }) => {
                     .then(({ status, }) => {
                         if (status === 201) {
                             close()
+                            getStudents().then(setStudent)
                         }
                     })
             })
@@ -184,4 +173,17 @@ const ModalBox = ({ close }: { close: () => void }) => {
         </form>
 
     )
+}
+function getStudents() {
+    return supabase.from('students').select(`*,users(name,gender(name),phone),batch(start_year,end_year),departments(name)`)
+        .then((res: any) => {
+            return (res.data.map((item: any) => ({
+                ...item,
+                name: item.users.name,
+                gender: item.users.gender.name,
+                batch: item.batch.start_year + "-" + item.batch.end_year,
+                department: item.departments.name,
+                phone: item.users.phone,
+            })))
+        })
 }
