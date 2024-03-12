@@ -22,16 +22,29 @@ type IAuthContext = {
     genders: {
         id: number
         name: string
-    }
+    }[]
+    roles: {
+        id: number
+        name: string
+    }[]
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoading, setLoading] = useState(true)
     const [session, setSession] = useState<Session | null>(null)
     const [batchs, setBatch] = useState<batch['Row'][]>([])
-    const [departments, setDepartments] = useState<any>([])
+    const [departments, setDepartments] = useState<any[]>([])
     const [genders, setGenders] = useState<any>([])
+    const [roles, setRoles] = useState<any>([])
     async function getBatch() {
+        const batchListString = sessionStorage.getItem('batch')
+        if (batchListString) {
+            const batchList = JSON.parse(batchListString)
+            if (batchList.length > 0) {
+                setBatch(batchList)
+                return
+            }
+        }
         supabase
             .from('batch')
             .select('*')
@@ -41,10 +54,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 }
                 if (batch) {
                     setBatch(batch)
+                    sessionStorage.setItem('batch', JSON.stringify(batch))
                 }
             })
     }
     async function getDepartments() {
+        const deptListString = sessionStorage.getItem('dept')
+        if (deptListString) {
+            const deptList = JSON.parse(deptListString)
+            if (deptList.length > 0) {
+                setDepartments(deptList)
+                return
+            }
+        }
         supabase
             .from('departments')
             .select('id,name',)
@@ -54,10 +76,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 }
                 if (data) {
                     setDepartments(data)
+                    sessionStorage.setItem('dept', JSON.stringify(data))
                 }
             })
     }
     async function getGenders() {
+        const genderListString = sessionStorage.getItem('gender')
+        if (genderListString) {
+            const genderList = JSON.parse(genderListString)
+            if (genderList.length > 0) {
+                setGenders(genderList)
+                return
+            }
+        }
         supabase
             .from('gender')
             .select('id,name',)
@@ -67,6 +98,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 }
                 if (data) {
                     setGenders(data)
+                    sessionStorage.setItem('gender', JSON.stringify(data))
+
+                }
+            })
+    }
+    async function getRoles() {
+        const roleListString = sessionStorage.getItem('role')
+        if (roleListString) {
+            const roleList = JSON.parse(roleListString)
+            if (roleList.length > 0) {
+                setRoles(roleList)
+                return
+            }
+        }
+        supabase.from('user_roles')
+            .select('id,name')
+            .then(({ data, error }) => {
+                if (error) {
+                    console.log(error)
+                }
+                if (data) {
+                    setRoles(data)
+                    sessionStorage.setItem('role', JSON.stringify(data))
                 }
             })
     }
@@ -76,6 +130,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             getBatch()
             getDepartments()
             getGenders()
+            getRoles()
         }
     }, [session])
     useEffect(() => {
@@ -107,22 +162,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const handleSignUp = async ({ email, password, name, mobile, ...extras }: auth) => {
-        return supabase.auth.signUp(
-            {
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        name: name,
-                        phone: mobile,
-                        ...extras
-                    }
+        const obj = {
+            email: email,
+            password: password,
+            phone: mobile,
+            options: {
+                data: {
+                    name: name,
+                    ...extras.extras
                 }
             }
-        )
+        }
+        console.log(obj)
+        return supabase.auth.signUp(obj)
     }
     return (
-        <AuthContext.Provider value={{ isLoading, handleSignIn, batchs, departments, handleSignUp, session, signOut, genders }}>
+        <AuthContext.Provider value={{ isLoading, handleSignIn, batchs, departments, handleSignUp, session, signOut, genders, roles }}>
             {children}
         </AuthContext.Provider>
     )
