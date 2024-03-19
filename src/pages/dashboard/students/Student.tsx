@@ -7,12 +7,18 @@ import { Pagination } from '@/components/Pagination'
 import { Input } from '@/components/inputs/input'
 import { Option, Select } from '@/components/select/select'
 import { useModal } from '@/components/modal'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useAuth } from '@/components/AuthContext'
+import { supabase } from '@/utils/supbase/supabaseClient'
+
 const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "Maths", "Average", "Higher Secondary", "KEAM", "College Rank", "Proof", "Remark", "Batch", "Department",
     "Action"]
 export const Student = () => {
     const { Modal, open, close, } = useModal({ fadeTime: 300, title: "Add Staff" })
+    const [students, setStudent] = React.useState<any[]>([])
+    useEffect(() => {
+        getStudents().then(setStudent)
+    }, [])
 
     return (
         <>
@@ -33,61 +39,86 @@ export const Student = () => {
                             </THeadRow>
                         </Thead>
                         <TBody>
-                            <TBodyRow>
-                                <TBodyCell>Physics</TBodyCell>
-                                <TBodyCell className='font-semibold'>Dr. A. K. Singh</TBodyCell>
-                                <TBodyCell>9876543210</TBodyCell>
-                                <TBodyCell>aksingh@example.com</TBodyCell>
-                                <TBodyCell>Yes</TBodyCell>
-                                <TBodyCell>2023</TBodyCell>
-                                <TBodyCell className='flex gap-2 '>
-                                    <button>Edit</button>
-                                    <button>Delete</button>
-                                </TBodyCell>
-                            </TBodyRow>
+                            {students.map((item: any) => {
+                                if (item)
+                                    return (<TBodyRow key={item.id}>
+                                        <TBodyCell>{item.reg_no}</TBodyCell>
+                                        <TBodyCell className='font-semibold'>{item.name}</TBodyCell>
+                                        <TBodyCell className=''>{item.adm_no}</TBodyCell>
+
+                                        <TBodyCell>{item.gender}</TBodyCell>
+                                        <TBodyCell>{item.physics}</TBodyCell>
+                                        <TBodyCell>{item.chemistry}</TBodyCell>
+                                        <TBodyCell>{item.maths}</TBodyCell>
+                                        <TBodyCell>{((item.maths + item.chemistry + item.physics) / 3).toFixed(2)}</TBodyCell>
+                                        <TBodyCell>{item.pre_degree}</TBodyCell>
+                                        <TBodyCell>{item.keam}</TBodyCell>
+                                        <TBodyCell>{item.rank}</TBodyCell>
+                                        <TBodyCell>{''}</TBodyCell>
+                                        <TBodyCell>{''}</TBodyCell>
+                                        <TBodyCell>{item.batch}</TBodyCell>
+                                        <TBodyCell>{item.department}</TBodyCell>
+
+                                        <TBodyCell className='flex gap-2 '>
+                                            <></>
+                                            {/* <button>Edit</button>
+                                            <button>Delete</button> */}
+                                        </TBodyCell>
+                                    </TBodyRow>)
+                                else return <TBodyRow><></></TBodyRow>
+                            })}
                         </TBody>
                     </Table>
                 }
                 pagination={<Pagination start={1} total={5} />}
-                modal={<Modal><ModalBox close={close} /></Modal>}
+                modal={<Modal><ModalBox close={close} setStudent={setStudent} /></Modal>}
             /></>
     )
 }
-const ModalBox = ({ close }: { close: () => void }) => {
-    const { handleSignUp, batchs, departments } = useAuth()
+const ModalBox = ({ close, setStudent }: { close: () => void, setStudent: React.Dispatch<React.SetStateAction<any[]>> }) => {
+    const { batchs, departments, genders, roles } = useAuth()
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const e: any = event
-        const data = {
+        const userData = {
             name: e.currentTarget['name'].value as string,
             email: e.currentTarget['email']?.value as string,
-            mobile: e.currentTarget['mobile']?.value as string,
+            phone: e.currentTarget['mobile']?.value as string,
             gender: e.currentTarget['gender'].options[e.currentTarget['gender'].selectedIndex].id as string,
-            dept_id: e.currentTarget['department'].options[e.currentTarget['department'].selectedIndex].id as string,
-            batch_id: e.currentTarget['batch'].options[e.currentTarget['batch'].selectedIndex].id as string,
+            role_id: roles.find((role) => role.name === "student")?.id
+        }
+        const data = {
+            reg_no: e.currentTarget['reg_no'].value as string,
+            adm_no: e.currentTarget['adm_no'].value as string,
             physics: e.currentTarget['physics'].value as string,
             chemistry: e.currentTarget['chemistry'].value as string,
             maths: e.currentTarget['maths'].value as string,
             pre_degree: e.currentTarget['higher_secondary'].value as string,
             keam: e.currentTarget['keam'].value as string,
             rank: e.currentTarget['rank'].value as string,
-            reg_no: e.currentTarget['reg_no'].value as string,
-            adm_no: e.currentTarget['adm_no'].value as string,
-            role: 'student'
+            batch_id: e.currentTarget['batch'].options[e.currentTarget['batch'].selectedIndex].id as string,
+            dept_id: e.currentTarget['department'].options[e.currentTarget['department'].selectedIndex].id as string,
         }
-        console.log(data)
-        handleSignUp({
-            email: data.email,
-            password: '123456789',
-            name: data.name,
-            mobile: data.mobile,
-            extras: {
-                ...data
-            }
-        }).then(() => {
-            console.log('success',)
+        const studentData = (userId: string) => ({
+            ...data,
+            user_id: userId
         })
+        supabase
+            .from('users')
+            .insert(userData)
+            .select('id')
+            .then((res: any) => {
+                const userId = res.data[0].id
+                supabase.from('students')
+                    .insert(studentData(userId))
+                    .then(({ status, }) => {
+                        if (status === 201) {
+                            close()
+                            getStudents().then(setStudent)
+                        }
+                    })
+            })
     }
     return (
         <form onSubmit={handleSubmit}>
@@ -104,9 +135,8 @@ const ModalBox = ({ close }: { close: () => void }) => {
                     <Input id='mobile' required placeholder='Enter mobile'>Mobile</Input>
 
                     <Select id='gender' header='Gender' >
-                        <Option>Male</Option>
-                        <Option>Female</Option>
-                        <Option>Other</Option>
+                        {genders.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
+
                     </Select>
                 </div>
                 <div className='flex w-full gap-3'>
@@ -143,4 +173,17 @@ const ModalBox = ({ close }: { close: () => void }) => {
         </form>
 
     )
+}
+function getStudents() {
+    return supabase.from('students').select(`*,users(name,gender(name),phone),batch(start_year,end_year),departments(name)`)
+        .then((res: any) => {
+            return (res.data.map((item: any) => ({
+                ...item,
+                name: item.users.name,
+                gender: item.users.gender.name,
+                batch: item.batch.start_year + "-" + item.batch.end_year,
+                department: item.departments.name,
+                phone: item.users.phone,
+            })))
+        })
 }
