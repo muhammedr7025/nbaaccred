@@ -11,7 +11,7 @@ type auth = {
     mobile: string
     extras?: any
 }
-type departmentType = department['Row']
+export type departmentType = department['Row']
 type IAuthContext = {
     isLoading: boolean
     session: Session | null
@@ -31,7 +31,8 @@ type IAuthContext = {
     staff: {
         get: () => any
         set: React.Dispatch<React.SetStateAction<any>>
-    }
+    },
+    setDepartments: React.Dispatch<React.SetStateAction<departmentType[]>>
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -107,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             session,
             batchs, departments,
             genders, roles,
-            staff
+            staff, setDepartments
         }}>
             {children}
         </AuthContext.Provider>
@@ -116,7 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => useContext(AuthContext)
 
-async function getDepartments() {
+export async function getDepartments() {
     const deptListString = sessionStorage.getItem('dept')
     if (deptListString) {
         const deptList = JSON.parse(deptListString)
@@ -124,9 +125,13 @@ async function getDepartments() {
             return Promise.resolve(deptList)
         }
     }
+    return getDepartmentsFromDB()
+
+}
+export async function getDepartmentsFromDB() {
     return supabase
         .from('departments')
-        .select('id,name',)
+        .select('id,name,code',)
         .then(({ data, error }) => {
             if (error) {
                 console.log(error)
