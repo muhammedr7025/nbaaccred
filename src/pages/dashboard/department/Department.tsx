@@ -118,7 +118,6 @@ function handleSubmit(closer: () => void) {
       name: e.currentTarget['name'].value as string,
       code: e.currentTarget['code'].value as string
     }
-    console.log(departmentData)
     supabase
       .from('departments')
       .insert(departmentData)

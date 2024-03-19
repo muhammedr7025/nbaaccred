@@ -11,39 +11,25 @@ import {
   Table,
   Thead,
 } from "@/components/table/table";
-import { staffHeaderType, staffType } from "@/types/tables";
 import { BoxLayout } from "../boxLayout";
 import { useModal } from "@/components/modal";
 import { Input } from "@/components/inputs/input";
-import { Option, Select } from "@/components/select/select";
+import { getBatchFromDB, useAuth } from "@/components/AuthContext";
+import { batch } from "@/utils/supbase/supabase";
+import { supabase } from "@/utils/supbase/supabaseClient";
 
-const header: staffHeaderType[] = [
-  "Department",
-  "Name",
-  "Mobile",
-  "Email",
-  "Advisor",
+const header = [
+  "No.",
   "Batch",
-  "Action",
+  "", "", ""
 ];
-const data: staffType[] = [
-  {
-    department: "Physics",
-    name: "Dr. A. K. Singh",
-    mobile: "9876543210",
-    email: "aksingh@example.com",
-    advisor: true,
-    batch: 2023,
-    edit: () => {},
-    delete: () => {},
-  },
-];
+
 export const Batch = () => {
-  const { Modal, open } = useModal({ fadeTime: 300, title: "Add Staff" });
+  const { Modal, open, close } = useModal({ fadeTime: 300, title: "Add Batch" });
   function ModalLayout() {
     return (
       <Modal>
-        <ModalBox />
+        <ModalBox close={close} />
       </Modal>
     );
   }
@@ -59,48 +45,29 @@ export const Batch = () => {
 const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   return (
     <TopBar name="Staff">
-      <Button onClick={openModal}>Add Staff</Button>
-      <Button>Import</Button>
+      <Button onClick={openModal}>Add Batch</Button>
+      {/* <Button>Import</Button>
       <Button className="flex gap-2">
         <DownloadIcon />
         CSV
-      </Button>
+      </Button> */}
     </TopBar>
   );
 };
-const ModalBox = () => {
+const ModalBox = ({ close }: any) => {
+  const { setBatch } = useAuth()
+  function closer() {
+    close()
+    getBatchFromDB().then(data => setBatch(data as batch['Row'][]))
+  }
   return (
-    <form>
+    <form onSubmit={handleSubmit(closer)}>
       <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
         <div className="flex w-full gap-3">
-          <Input placeholder="Enter name">Name</Input>
-          <Input placeholder="Enter email">Email</Input>
+          <Input id="start" placeholder="Enter name">Start Year</Input>
+          <Input id='end' placeholder="Enter email">End Year</Input>
         </div>
-        <div className="flex w-full gap-3">
-          <Input placeholder="Enter mobile">Mobile</Input>
-          <Select header="Gender">
-            <Option>Male</Option>
-            <Option>Female</Option>
-            <Option>Other</Option>
-          </Select>
-        </div>
-        <div className="flex w-full gap-3">
-          <Select header="Department">
-            <Option>Department</Option>
-            <Option>Physics</Option>
-          </Select>
-          <Select header="Batch">
-            <Option>Department</Option>
-            <Option>Physics</Option>
-          </Select>
-        </div>
-        <div className="flex w-full gap-3">
-          <Select header="Is Advisor">
-            <Option>Yes</Option>
-            <Option>No</Option>
-          </Select>
-          <div className=" flex-1"></div>
-        </div>
+
         <div className="flex w-full gap-3 py-7">
           <Button className="flex-1 hover:bg-green-500 hover:text-white active: ">
             Save
@@ -114,6 +81,7 @@ const ModalBox = () => {
   );
 };
 const TableSection = () => {
+  const { batchs } = useAuth()
   return (
     <Table>
       <Thead>
@@ -124,21 +92,33 @@ const TableSection = () => {
         </THeadRow>
       </Thead>
       <TBody>
-        {data.map((item, index) => (
-          <TBodyRow key={index}>
-            <TBodyCell>{item.department}</TBodyCell>
-            <TBodyCell className="font-semibold">{item.name}</TBodyCell>
-            <TBodyCell>{item.mobile}</TBodyCell>
-            <TBodyCell>{item.email}</TBodyCell>
-            <TBodyCell>{item.advisor ? "Yes" : "No"}</TBodyCell>
-            <TBodyCell>{item.batch}</TBodyCell>
-            <TBodyCell className="flex gap-2 ">
+        {batchs?.map((item, index) => (
+          <TBodyRow key={index} >
+            <TBodyCell>{index + 1}</TBodyCell>
+            <TBodyCell >{item.start_year + " - " + item.end_year}</TBodyCell>
+            {/* <TBodyCell className="flex gap-2 ">
               <button onClick={item.edit}>Edit</button>
               <button onClick={item.delete}>Delete</button>
-            </TBodyCell>
+            </TBodyCell> */}
           </TBodyRow>
         ))}
       </TBody>
     </Table>
   );
 };
+
+function handleSubmit(closer: () => void) {
+  return (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const e: any = event
+    const batchData = {
+      start_year: e.currentTarget['start'].value as string,
+      end_year: e.currentTarget['end'].value as string
+    }
+    supabase
+      .from('batch')
+      .insert(batchData)
+      .select('id')
+      .then(() => closer())
+  }
+}

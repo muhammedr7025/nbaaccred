@@ -1,3 +1,4 @@
+interface TableProps extends React.HTMLAttributes<HTMLTableSectionElement> { }
 export const Table = ({ children, className = "" }: {
     children: React.ReactNode,
     className?: string
@@ -27,37 +28,24 @@ export const THeadRow = ({ children, className = "" }: {
     </tr>)
 }
 
-export const THeadCell = ({ children, className = "" }: {
-    children: React.ReactNode,
-    className?: string
-}) => {
+export const THeadCell: React.FC<TableProps> = ({ children, className = "" }) => {
     return (<th className={`h-12 px-4 text-left align-middle font-medium text-muted-foreground [&amp;:has([role=checkbox])]:pr-0 w-[150px] ${className}`}>
         {children}
     </th>)
 }
-
-export const TBody = ({ children, className = "" }: {
-    children: React.ReactNode,
-    className?: string
-}) => {
-    return (<tbody className={`[&amp;_tr:last-child]:border-0 ${className} `}>
-        {children}
+export const TBody: React.FC<TableProps> = ({ ...props }) => {
+    return (<tbody className={`[&amp;_tr:last-child]:border-0 ${props?.className} `}>
+        {props?.children}
     </tbody>)
 }
 
-export const TBodyRow = ({ children, className = "" }: {
-    children: React.ReactNode,
-    className?: string
-}) => {
+export const TBodyRow: React.FC<TableProps> = ({ children, className = "" }) => {
     return (<tr className={`border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted ${className}`}>
         {children}
     </tr>)
 }
 
-export const TBodyCell = ({ children, className = "" }: {
-    children: React.ReactNode,
-    className?: string
-}) => {
+export const TBodyCell: React.FC<TableProps> = ({ children, className = "" }) => {
     return (<td className={`p-4 align-middle [&amp;:has([role=checkbox])]:pr-0 text-nowrap ${className}`} >
         {children}
     </td >)

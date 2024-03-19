@@ -32,7 +32,8 @@ type IAuthContext = {
         get: () => any
         set: React.Dispatch<React.SetStateAction<any>>
     },
-    setDepartments: React.Dispatch<React.SetStateAction<departmentType[]>>
+    setDepartments: React.Dispatch<React.SetStateAction<departmentType[]>>,
+    setBatch: React.Dispatch<React.SetStateAction<batch['Row'][]>>
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -108,7 +109,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             session,
             batchs, departments,
             genders, roles,
-            staff, setDepartments
+            staff, setDepartments,
+            setBatch
         }}>
             {children}
         </AuthContext.Provider>
@@ -152,7 +154,10 @@ async function getBatch() {
             return Promise.resolve(batchList)
         }
     }
-    supabase
+    return getBatchFromDB()
+}
+export async function getBatchFromDB() {
+    return supabase
         .from('batch')
         .select('*')
         .then(({ data: batch, error }) => {
@@ -165,7 +170,6 @@ async function getBatch() {
             }
         })
 }
-
 async function getGenders() {
     const genderListString = sessionStorage.getItem('gender')
     if (genderListString) {
