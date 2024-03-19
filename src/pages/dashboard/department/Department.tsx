@@ -1,7 +1,8 @@
-import { DownloadIcon } from "@/assets/SvgTsx/download";
+// import { DownloadIcon } from "@/assets/SvgTsx/download";
 import { Pagination } from "@/components/Pagination";
 import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/buttons/default";
+
 import {
   TBody,
   TBodyCell,
@@ -43,8 +44,14 @@ export const Department = () => {
   );
 };
 const TopBarSection = ({ openModal }: { openModal: () => void }) => {
+  const { setDepartments } = useAuth()
+
+  function reload() {
+    getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
+  }
   return (
     <TopBar name="Staff">
+      <Button onClick={reload}>Reload</Button>
       <Button onClick={openModal}>Add Department</Button>
       {/* <Button>Import</Button>
       <Button className="flex gap-2">
@@ -56,6 +63,8 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
 };
 const ModalBox = ({ close }: { close: () => void }) => {
   const { setDepartments } = useAuth()
+
+
   function closer() {
     close()
     getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
@@ -66,17 +75,18 @@ const ModalBox = ({ close }: { close: () => void }) => {
         <div className="flex w-full gap-3">
           <Input placeholder="Enter name" id="name">Name</Input>
           <Input placeholder="Enter name" id="code">Code</Input>
-
         </div>
-
+        <div className="flex w-full gap-3">
+          <Input type="file" id="mission">Mission</Input>
+          <Input type="file" id="vision">Vision</Input>
+        </div>
         <div className="flex w-full gap-3 py-7">
           <Button className="flex-1 hover:bg-green-500 hover:text-white active: ">
             Save
           </Button>
           <Button className="flex-1 hover:bg-red-500 hover:text-white ">
             Cancel
-          </Button>
-        </div>
+          </Button></div>
       </div>
     </form>
   );
@@ -116,12 +126,44 @@ function handleSubmit(closer: () => void) {
     const e: any = event
     const departmentData = {
       name: e.currentTarget['name'].value as string,
-      code: e.currentTarget['code'].value as string
+      code: e.currentTarget['code'].value as string,
+      mission_url: '',
+      vision_url: ''
     }
-    supabase
-      .from('departments')
-      .insert(departmentData)
-      .select('id')
-      .then(() => closer())
+    const fileName = `${departmentData?.name}-${departmentData?.code}+${new Date().getTime()}`
+    const mission = getFilePath(e.currentTarget['mission'].files[0], fileName)
+    const vision = getFilePath(e.currentTarget['vision'].files[0], fileName)
+    departmentData.mission_url = mission.path
+    departmentData.vision_url = vision.path
+    const missionUpload = uploadFile('mission', mission.file, mission.path)
+    const visionUpload = uploadFile('vision', vision.file, vision.path)
+    Promise.all([missionUpload, visionUpload]).then(() => {
+      supabase
+        .from('departments')
+        .insert(departmentData)
+        .select('id')
+        .then(() => closer())
+    })
   }
 }
+export function getFilePath(file: File, name: string) {
+  const fileExt = file.name.split('.').pop()
+  return {
+    file,
+    path: `${name}.${fileExt}`
+  }
+}
+async function uploadFile(bucketName: string, file: File, filePath: string) {
+  return supabase.storage.from(bucketName).upload(filePath, file)
+    .then(({ error: uploadError, data }) => {
+      if (uploadError) {
+        throw uploadError
+      }
+      else {
+        console.log(data.path)
+      }
+    }).catch((error) => {
+      console.log(error)
+    })
+}
+
