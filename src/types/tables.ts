@@ -12,3 +12,7 @@ export type staffType = {
 export type studentType = {
 
 }
+
+export type batchType = {}
+
+export type departmentType = {}
