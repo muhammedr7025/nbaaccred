@@ -1,16 +1,13 @@
 import { useAuth } from "@/components/AuthContext";
-import React, { useEffect } from "react";
-import { Navigate, } from "react-router-dom";
-
+import React from "react";
 export function Login() {
-    const { handleSignIn, isLoading, session } = useAuth()
+    const { handleSignIn } = useAuth()
     const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const email: string = e.currentTarget.email.value
         const password: string = e.currentTarget.password.value
         handleSignIn(email, password);
     };
-    console.log("hi how")
     return (
 
         <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">

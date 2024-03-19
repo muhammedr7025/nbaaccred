@@ -6,8 +6,8 @@ export type staffType = {
     email: string
     advisor: boolean
     batch: number
-    edit: () => void
-    delete: () => void
+    edit?: () => void
+    delete?: () => void
 }
 export type studentType = {
 
