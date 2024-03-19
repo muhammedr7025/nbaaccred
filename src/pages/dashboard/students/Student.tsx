@@ -11,8 +11,9 @@ import React, { useEffect } from 'react'
 import { useAuth } from '@/components/AuthContext'
 import { supabase } from '@/utils/supbase/supabaseClient'
 
-const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "Maths", "Average", "Higher Secondary", "KEAM", "College Rank", "Proof", "Remark", "Batch", "Department",
-    "Action"]
+const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "Maths", "Average", "Higher Secondary", "KEAM", "College Rank", "Batch", "Department", "Proof", "Remark",
+    // "Action"
+]
 export const Student = () => {
     const { Modal, open, close, } = useModal({ fadeTime: 300, title: "Add Staff" })
     const [students, setStudent] = React.useState<any[]>([])
@@ -25,11 +26,11 @@ export const Student = () => {
             <BoxLayout
                 topBar={<TopBar name='Staff'>
                     <Button onClick={open}>Add Student</Button>
-                    <Button>Import</Button>
+                    {/* <Button>Import</Button>
                     <Button className='flex gap-2'>
                         <DownloadIcon />
                         CSV
-                    </Button>
+                    </Button> */}
                 </TopBar>}
                 table={
                     <Table>
@@ -39,7 +40,7 @@ export const Student = () => {
                             </THeadRow>
                         </Thead>
                         <TBody>
-                            {students.map((item: any) => {
+                            {students?.map((item: any) => {
                                 if (item)
                                     return (<TBodyRow key={item.id}>
                                         <TBodyCell>{item.reg_no}</TBodyCell>
@@ -54,10 +55,10 @@ export const Student = () => {
                                         <TBodyCell>{item.pre_degree}</TBodyCell>
                                         <TBodyCell>{item.keam}</TBodyCell>
                                         <TBodyCell>{item.rank}</TBodyCell>
-                                        <TBodyCell>{''}</TBodyCell>
-                                        <TBodyCell>{''}</TBodyCell>
                                         <TBodyCell>{item.batch}</TBodyCell>
                                         <TBodyCell>{item.department}</TBodyCell>
+                                        <TBodyCell>{''}</TBodyCell>
+                                        <TBodyCell>{''}</TBodyCell>
 
                                         <TBodyCell className='flex gap-2 '>
                                             <></>
@@ -135,17 +136,17 @@ const ModalBox = ({ close, setStudent }: { close: () => void, setStudent: React.
                     <Input id='mobile' required placeholder='Enter mobile'>Mobile</Input>
 
                     <Select id='gender' header='Gender' >
-                        {genders.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
+                        {genders?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
 
                     </Select>
                 </div>
                 <div className='flex w-full gap-3'>
                     <Select id='department' header='Department'>
-                        {departments.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name}</Option>)}
+                        {departments?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name}</Option>)}
                     </Select>
                     <Select id='batch' header='Batch' placeholder='Selector' >
                         {
-                            batchs.map((item) => <Option id={`${item.id}`} key={item.id} >{item.start_year + ' - ' + item.end_year}</Option>)
+                            batchs?.map((item) => <Option id={`${item.id}`} key={item.id} >{item.start_year + ' - ' + item.end_year}</Option>)
                         }
                     </Select>
                 </div>
@@ -174,7 +175,7 @@ const ModalBox = ({ close, setStudent }: { close: () => void, setStudent: React.
 
     )
 }
-function getStudents() {
+async function getStudents() {
     return supabase.from('students').select(`*,users(name,gender(name),phone),batch(start_year,end_year),departments(name)`)
         .then((res: any) => {
             return (res.data.map((item: any) => ({
