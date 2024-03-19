@@ -1,4 +1,3 @@
-import { DownloadIcon } from '@/assets/SvgTsx/download'
 import { Pagination } from '@/components/Pagination'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/buttons/default'
@@ -10,7 +9,7 @@ import { Input } from '@/components/inputs/input'
 import { Option, Select } from '@/components/select/select'
 import { supabase } from '@/utils/supbase/supabaseClient'
 import { useAuth } from '@/components/AuthContext'
-import React, { } from 'react'
+import React from 'react'
 
 const header: staffHeaderType[] = ["Name", "Mobile", "Email", "Advisor", "Department",
     //  "Batch", 

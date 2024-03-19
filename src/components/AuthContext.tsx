@@ -11,7 +11,7 @@ type auth = {
     mobile: string
     extras?: any
 }
-type departmentType = department['Row']
+export type departmentType = department['Row']
 type IAuthContext = {
     isLoading: boolean
     session: Session | null
@@ -31,7 +31,9 @@ type IAuthContext = {
     staff: {
         get: () => any
         set: React.Dispatch<React.SetStateAction<any>>
-    }
+    },
+    setDepartments: React.Dispatch<React.SetStateAction<departmentType[]>>,
+    setBatch: React.Dispatch<React.SetStateAction<batch['Row'][]>>
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -107,7 +109,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             session,
             batchs, departments,
             genders, roles,
-            staff
+            staff, setDepartments,
+            setBatch
         }}>
             {children}
         </AuthContext.Provider>
@@ -116,7 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => useContext(AuthContext)
 
-async function getDepartments() {
+export async function getDepartments() {
     const deptListString = sessionStorage.getItem('dept')
     if (deptListString) {
         const deptList = JSON.parse(deptListString)
@@ -124,9 +127,13 @@ async function getDepartments() {
             return Promise.resolve(deptList)
         }
     }
+    return getDepartmentsFromDB()
+
+}
+export async function getDepartmentsFromDB() {
     return supabase
         .from('departments')
-        .select('id,name',)
+        .select('*',)
         .then(({ data, error }) => {
             if (error) {
                 console.log(error)
@@ -147,7 +154,10 @@ async function getBatch() {
             return Promise.resolve(batchList)
         }
     }
-    supabase
+    return getBatchFromDB()
+}
+export async function getBatchFromDB() {
+    return supabase
         .from('batch')
         .select('*')
         .then(({ data: batch, error }) => {
@@ -160,7 +170,6 @@ async function getBatch() {
             }
         })
 }
-
 async function getGenders() {
     const genderListString = sessionStorage.getItem('gender')
     if (genderListString) {
