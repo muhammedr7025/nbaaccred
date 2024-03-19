@@ -26,7 +26,7 @@ export const BoxLayout = (
                     </div>
                 </div>
             </main>
-            <div className='px-7 pb-7 ' >
+            <div className='px-7 pb-7 hidden ' >
                 {pagination}
             </div>
             {modal}

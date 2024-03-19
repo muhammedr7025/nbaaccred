@@ -1,9 +1,8 @@
-import { DownloadIcon } from '@/assets/SvgTsx/download'
 import { Pagination } from '@/components/Pagination'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/buttons/default'
 import { TBody, TBodyCell, TBodyRow, THeadCell, THeadRow, Table, Thead } from '@/components/table/table'
-import { staffHeaderType } from '@/types/tables'
+import { staffHeaderType, } from '@/types/tables'
 import { BoxLayout } from '../boxLayout'
 import { useModal } from '@/components/modal'
 import { Input } from '@/components/inputs/input'
@@ -12,7 +11,7 @@ import { supabase } from '@/utils/supbase/supabaseClient'
 import { useAuth } from '@/components/AuthContext'
 import React from 'react'
 
-const header: staffHeaderType[] = ["Department", "Name", "Mobile", "Email", "Advisor",
+const header: staffHeaderType[] = ["Name", "Mobile", "Email", "Advisor", "Department",
     //  "Batch", 
     // "Action"
 ]
@@ -53,11 +52,11 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
         <TopBar name='Staff' >
             <Button onClick={getStaff}>Reload</Button>
             <Button onClick={openModal}>Add Staff</Button>
-            <Button>Import</Button>
-            <Button className='flex gap-2'>
+            {/* <Button>Import</Button> */}
+            {/* <Button className='flex gap-2'>
                 <DownloadIcon />
                 CSV
-            </Button>
+            </Button> */}
         </TopBar>
     )
 }
@@ -80,13 +79,13 @@ const ModalBox = ({ close }: { close: () => void }) => {
                 <div className='flex w-full gap-3'>
                     <Input id='mobile' placeholder='Enter mobile'>Mobile</Input>
                     <Select id='gender' header='Gender' >
-                        {genders.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
+                        {genders?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
 
                     </Select>
                 </div>
                 <div className='flex w-full gap-3'>
                     <Select id='department' header='Department'>
-                        {departments.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name}</Option>)}
+                        {departments?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name}</Option>)}
                     </Select>
 
                     <Select id='advisor' header='Is Advisor' >
@@ -116,15 +115,15 @@ const TableSection = ({ staff }: any) => {
                 </THeadRow>
             </Thead>
             <TBody>
-                {staff.map((item: any) => {
+                {staff?.map((item: any) => {
                     if (item)
                         return (
                             <TBodyRow key={item.id}>
-                                <TBodyCell>{item.dept}</TBodyCell>
                                 <TBodyCell className='font-semibold'>{item.name}</TBodyCell>
                                 <TBodyCell>{item.phone}</TBodyCell>
                                 <TBodyCell>{item.email}</TBodyCell>
                                 <TBodyCell>{item.is_advisor ? "Yes" : "No"}</TBodyCell>
+                                <TBodyCell>{item.dept}</TBodyCell>
                                 {/* <TBodyCell className='flex gap-2 '>
                                     <button onClick={item.edit}>Edit</button>
                                     <button onClick={item.delete}>Delete</button>
