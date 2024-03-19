@@ -46,11 +46,11 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   return (
     <TopBar name="Staff">
       <Button onClick={openModal}>Add Department</Button>
-      <Button>Import</Button>
+      {/* <Button>Import</Button>
       <Button className="flex gap-2">
         <DownloadIcon />
         CSV
-      </Button>
+      </Button> */}
     </TopBar>
   );
 };
