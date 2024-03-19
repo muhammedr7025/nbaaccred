@@ -17,6 +17,7 @@ import { useModal } from "@/components/modal";
 import { Input } from "@/components/inputs/input";
 import { departmentType, getDepartmentsFromDB, useAuth } from "@/components/AuthContext";
 import { supabase } from "@/utils/supbase/supabaseClient";
+import { DownloadIcon } from "@/assets/SvgTsx/download";
 
 const header = [
   "Code",
@@ -92,6 +93,16 @@ const ModalBox = ({ close }: { close: () => void }) => {
   );
 };
 const TableSection = () => {
+  function downloadMission(url: string | null) {
+    return () => {
+      handleDownload('mission', url)
+    }
+  }
+  function downloadVision(url: string | null) {
+    return () => {
+      handleDownload('vision', url)
+    }
+  }
   const { departments } = useAuth()
   return (
     <Table>
@@ -107,8 +118,16 @@ const TableSection = () => {
           <TBodyRow key={index}>
             <TBodyCell className="">{item?.code}</TBodyCell>
             <TBodyCell className="">{item?.name}</TBodyCell>
-            <TBodyCell className="">{''}</TBodyCell>
-            <TBodyCell className="">{''}</TBodyCell>
+            <TBodyCell >
+              <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
+                <DownloadIcon />
+              </div>
+            </TBodyCell>
+            <TBodyCell >
+              <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
+                <DownloadIcon />
+              </div>
+            </TBodyCell>
             {/* <TBodyCell className="flex gap-2 ">
               <button onClick={item.edit}>Edit</button>
               <button onClick={item.delete}>Delete</button>
@@ -167,3 +186,28 @@ async function uploadFile(bucketName: string, file: File, filePath: string) {
     })
 }
 
+async function downloadImage(bucketName: string, path: string) {
+  return supabase.storage.from(bucketName).download(path)
+    .then(({ data, error }) => {
+      if (error) {
+        console.log(error)
+      }
+      else if (data) return URL.createObjectURL(data)
+    })
+    .catch((error) => {
+      console.log('Error downloading image: ', error)
+      return null
+    })
+}
+
+
+function handleDownload(bucketName: string, path: string | null) {
+  if (path) {
+    console.log(path)
+    downloadImage(bucketName, path).then(url => {
+      if (url) {
+        window.open(url)
+      }
+    })
+  }
+}

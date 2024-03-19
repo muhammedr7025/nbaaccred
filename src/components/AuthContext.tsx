@@ -133,7 +133,7 @@ export async function getDepartments() {
 export async function getDepartmentsFromDB() {
     return supabase
         .from('departments')
-        .select('id,name,code',)
+        .select('*',)
         .then(({ data, error }) => {
             if (error) {
                 console.log(error)
