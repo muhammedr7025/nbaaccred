@@ -2,7 +2,7 @@ import { TBody, TBodyCell, TBodyRow, THeadCell, THeadRow, Table, Thead } from '@
 import { BoxLayout } from '../boxLayout'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/buttons/default'
-import { DownloadIcon } from '@/assets/SvgTsx/download'
+// import { DownloadIcon } from '@/assets/SvgTsx/download'
 import { Pagination } from '@/components/Pagination'
 import { Input } from '@/components/inputs/input'
 import { Option, Select } from '@/components/select/select'
