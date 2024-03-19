@@ -18,6 +18,7 @@ import { Input } from "@/components/inputs/input";
 import { departmentType, getDepartmentsFromDB, useAuth } from "@/components/AuthContext";
 import { supabase } from "@/utils/supbase/supabaseClient";
 import { DownloadIcon } from "@/assets/SvgTsx/download";
+import { useState } from "react";
 
 const header = [
   "Code",
@@ -85,7 +86,7 @@ const ModalBox = ({ close }: { close: () => void }) => {
           <Button className="flex-1 hover:bg-green-500 hover:text-white active: ">
             Save
           </Button>
-          <Button className="flex-1 hover:bg-red-500 hover:text-white ">
+          <Button className="flex-1 hover:bg-red-500 hover:text-white " onClick={close}>
             Cancel
           </Button></div>
       </div>
@@ -114,19 +115,23 @@ const TableSection = () => {
         </THeadRow>
       </Thead>
       <TBody>
-        {departments?.map((item, index) => (
-          <TBodyRow key={index}>
+        {departments?.map((item) => (
+          <TBodyRow key={item?.id}>
             <TBodyCell className="">{item?.code}</TBodyCell>
             <TBodyCell className="">{item?.name}</TBodyCell>
             <TBodyCell >
-              <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
+              {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
                 <DownloadIcon />
-              </div>
+              </div> :
+                <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
+              }
             </TBodyCell>
             <TBodyCell >
-              <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
+              {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
                 <DownloadIcon />
-              </div>
+              </div> :
+                <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
+              }
             </TBodyCell>
             {/* <TBodyCell className="flex gap-2 ">
               <button onClick={item.edit}>Edit</button>
@@ -138,7 +143,48 @@ const TableSection = () => {
     </Table>
   );
 };
+function UploadSection({ bucketName, name, code, id }: { bucketName: string, name: string | null, code: string | null, id: number | string }) {
+  const { setDepartments } = useAuth()
+  if (!bucketName && !name && !code && !id) return
+  const [file, setFile] = useState<File | undefined>()
+  const [start, setStart] = useState(false)
+  function handleUploadButton() {
+    if (!file) {
+      setStart(!start)
+    }
+    else {
+      const fileName = `${name}-${code}+${new Date().getTime()}`
+      const data = getFilePath(file, fileName)
+      const uploading = uploadFile(bucketName, file, data?.path as string)
+      uploading.then(() => updateDepartment(data, bucketName))
+    }
+    function updateDepartment(data: { file: File | undefined, path: string } | null, bucketName: string) {
+      const updateData = bucketName === 'mission' ? { mission_url: data?.path } : bucketName === 'vision' ? { vision_url: data?.path } : null
+      if (updateData) {
+        supabase.from('departments').update(updateData).eq('id', id).select('id')
+          .then(updateView)
+      }
+    }
+    function updateView() {
+      getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
 
+    }
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <Button className="cursor-pointer w-fit" onClick={handleUploadButton} >
+        {file ? 'Upload' :
+          <div className="rotate-180">
+            <DownloadIcon />
+          </div>
+        }
+      </Button>
+      {start && <Input type="file" className=" h-10"
+        onChange={(e) => setFile(e.target.files?.[0])}
+      />}
+    </div>
+  )
+}
 function handleSubmit(closer: () => void) {
   return (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -152,11 +198,20 @@ function handleSubmit(closer: () => void) {
     const fileName = `${departmentData?.name}-${departmentData?.code}+${new Date().getTime()}`
     const mission = getFilePath(e.currentTarget['mission'].files[0], fileName)
     const vision = getFilePath(e.currentTarget['vision'].files[0], fileName)
-    departmentData.mission_url = mission.path
-    departmentData.vision_url = vision.path
-    const missionUpload = uploadFile('mission', mission.file, mission.path)
-    const visionUpload = uploadFile('vision', vision.file, vision.path)
-    Promise.all([missionUpload, visionUpload]).then(() => {
+    let missionUpload, visionUpload
+    const promises = []
+    if (mission) {
+      departmentData.mission_url = mission.path
+      missionUpload = uploadFile('mission', mission.file, mission.path)
+      promises.push(missionUpload)
+    }
+    if (vision) {
+      visionUpload = uploadFile('vision', vision.file, vision.path)
+      departmentData.vision_url = vision.path
+      promises.push(visionUpload)
+    }
+
+    Promise.all(promises).then(() => {
       supabase
         .from('departments')
         .insert(departmentData)
@@ -165,7 +220,8 @@ function handleSubmit(closer: () => void) {
     })
   }
 }
-export function getFilePath(file: File, name: string) {
+export function getFilePath(file: File | undefined, name: string) {
+  if (!file) return null
   const fileExt = file.name.split('.').pop()
   return {
     file,
