@@ -72,12 +72,12 @@ const ModalBox = ({ close }: any) => {
     <form onSubmit={handleSubmit(closer)}>
       <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
         <div className="flex w-full gap-3">
-          <Select header="Start Year" id="start">
-            {startYears.map((item, index) => <Option key={index} selected={currentYear === item} >{item}</Option>)}
+          <Select header="Start Year" id="start" defaultValue={currentYear}>
+            {startYears.map((item, index) => <Option key={index} value={item} >{item}</Option>)}
             {/* <Option></Option> */}
           </Select>
-          <Select header="End Year" id="end">
-            {endYears.map((item, index) => <Option key={index} selected={currentYear + 4 === item}>{item}</Option>)}
+          <Select header="End Year" id="end" defaultValue={currentYear + 4}>
+            {endYears.map((item, index) => <Option key={index} value={item} >{item}</Option>)}
             {/* <Option></Option> */}
           </Select>
         </div>

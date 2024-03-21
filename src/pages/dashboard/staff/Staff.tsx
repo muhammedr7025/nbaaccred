@@ -12,7 +12,7 @@ import { useAuth } from '@/components/AuthContext'
 import React from 'react'
 
 const header: staffHeaderType[] = ["Name", "Mobile", "Email", "Advisor", "Department",
-    //  "Batch", 
+    "Batch",
     // "Action"
 ]
 
@@ -61,13 +61,17 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
     )
 }
 const ModalBox = ({ close }: { close: () => void }) => {
-    const { departments, genders, roles, staff } = useAuth()
+    const [isAdvisor, setIsAdvisor] = React.useState(false)
+    const { departments, genders, roles, staff, batchs } = useAuth()
     function closer() {
         close()
         getStaff()
     }
     function getStaff() {
         getStaffFromDB().then(staff.set)
+    }
+    function handleIsAdvisor(e: React.ChangeEvent<HTMLSelectElement>) {
+        setIsAdvisor(e.target.value.toLowerCase() === "yes")
     }
     return (
         <form onSubmit={handleSubmit(roles, closer)}>
@@ -84,14 +88,20 @@ const ModalBox = ({ close }: { close: () => void }) => {
                     </Select>
                 </div>
                 <div className='flex w-full gap-3'>
-                    <Select id='department' header='Department' required>
+                    <Select id='department' header='Department' required >
                         {departments?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name}</Option>)}
                     </Select>
 
-                    <Select id='advisor' header='Is Advisor' >
-                        <Option selected>No</Option>
-                        <Option>Yes</Option>
+                    <Select id='advisor' header='Is Advisor' onChange={handleIsAdvisor} defaultValue={'no'}>
+                        <Option value='yes' >Yes</Option>
+                        <Option value='no'>No</Option>
                     </Select>
+                </div>
+                <div className='flex w-full gap-3'>
+                    {isAdvisor && <Select id='batch' header='Batch Incharge' required={isAdvisor}>
+                        {batchs?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{`${item.start_year}-${item.end_year}`}</Option>)}
+                    </Select>}
+                    <div className='flex flex-1'></div>
                 </div>
                 <div className='flex w-full gap-3 py-7'>
                     <Button className='flex-1 hover:bg-green-500 hover:text-white active: ' type='submit'>
@@ -118,19 +128,20 @@ const TableSection = ({ staff }: any) => {
                 {staff?.map((item: any) => {
                     if (item)
                         return (
-                            <TBodyRow key={item.id}>
+                            <TBodyRow key={item?.id}>
                                 <TBodyCell className='font-semibold'>{item.name}</TBodyCell>
                                 <TBodyCell>{item.phone}</TBodyCell>
                                 <TBodyCell>{item.email}</TBodyCell>
                                 <TBodyCell>{item.is_advisor ? "Yes" : "No"}</TBodyCell>
                                 <TBodyCell>{item.dept}</TBodyCell>
+                                <TBodyCell>{item?.batch}</TBodyCell>
                                 {/* <TBodyCell className='flex gap-2 '>
                                     <button onClick={item.edit}>Edit</button>
                                     <button onClick={item.delete}>Delete</button>
                                 </TBodyCell> */}
                             </TBodyRow>
                         )
-                    else <></>
+                    else <div></div>
                 })}
             </TBody>
         </Table>
@@ -146,15 +157,19 @@ export async function getStaff() {
     return getStaffFromDB()
 }
 async function getStaffFromDB() {
-    return supabase.from('staff').select(`is_advisor,users(name,phone,email),departments(code)`)
+    return supabase.from('staff').select(`is_advisor,users(id,name,phone,email),departments(code),batch(start_year,end_year)`)
         .then((res: any) => {
+
             const data = res.data.map((item: any) => ({
                 ...item,
+                id: item.users.id,
                 name: item.users.name,
                 phone: item.users.phone,
                 email: item.users.email,
-                dept: item.departments.code
+                dept: item.departments.code,
+                batch: item?.batch ? `${item?.batch.start_year}-${item?.batch.end_year}` : ''
             }))
+            console.log(data)
             if (data.length > 0)
                 sessionStorage.setItem('staff', JSON.stringify(data))
             return data
@@ -174,6 +189,7 @@ function handleSubmit(roles: any, closer: () => void) {
         const data = {
             dept_id: e.currentTarget['department'].options[e.currentTarget['department'].selectedIndex].id as string,
             is_advisor: e.currentTarget['advisor'].options[e.currentTarget['advisor'].selectedIndex].value?.toLowerCase() === "yes" ? true : false,
+            batch_id: e.currentTarget['batch']?.options[e.currentTarget['batch'].selectedIndex].id as string
         }
         console.log(userData)
         supabase
