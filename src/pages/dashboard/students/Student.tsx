@@ -15,7 +15,7 @@ const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "M
     // "Action"
 ]
 export const Student = () => {
-    const { Modal, open, close, } = useModal({ fadeTime: 300, title: "Add Staff" })
+    const { Modal, open, close, } = useModal({ fadeTime: 300, title: "Add Student" })
     const [students, setStudent] = React.useState<any[]>([])
     useEffect(() => {
         getStudents().then(setStudent)
@@ -25,6 +25,7 @@ export const Student = () => {
         <>
             <BoxLayout
                 topBar={<TopBar name='Staff'>
+                    <Button >Reload</Button>
                     <Button onClick={open}>Add Student</Button>
                     {/* <Button>Import</Button>
                     <Button className='flex gap-2'>

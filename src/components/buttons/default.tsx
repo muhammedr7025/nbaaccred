@@ -8,6 +8,7 @@ export const Button = ({ children, className = '', ...props }: ButtonProps) => {
             hover:bg-gray-100 active:bg-black active:text-white
             
             ${className}`}
+            type='button'
             {...props}
         >
             {children}

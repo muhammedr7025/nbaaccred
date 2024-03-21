@@ -83,7 +83,7 @@ const ModalBox = ({ close }: { close: () => void }) => {
           <Input type="file" id="vision">Vision</Input>
         </div>
         <div className="flex w-full gap-3 py-7">
-          <Button className="flex-1 hover:bg-green-500 hover:text-white active: ">
+          <Button className="flex-1 hover:bg-green-500 hover:text-white active: " type="submit">
             Save
           </Button>
           <Button className="flex-1 hover:bg-red-500 hover:text-white " onClick={close}>

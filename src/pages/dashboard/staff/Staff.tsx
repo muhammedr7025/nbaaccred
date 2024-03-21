@@ -73,18 +73,18 @@ const ModalBox = ({ close }: { close: () => void }) => {
         <form onSubmit={handleSubmit(roles, closer)}>
             <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
                 <div className='flex w-full gap-3'>
-                    <Input id='name' placeholder='Enter name'>Name</Input>
-                    <Input id='email' placeholder='Enter email' >Email</Input>
+                    <Input id='name' placeholder='Enter name' required>Name</Input>
+                    <Input id='email' placeholder='Enter email' required>Email</Input>
                 </div>
                 <div className='flex w-full gap-3'>
-                    <Input id='mobile' placeholder='Enter mobile'>Mobile</Input>
+                    <Input id='mobile' placeholder='Enter mobile' required>Mobile</Input>
                     <Select id='gender' header='Gender' >
                         {genders?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
 
                     </Select>
                 </div>
                 <div className='flex w-full gap-3'>
-                    <Select id='department' header='Department'>
+                    <Select id='department' header='Department' required>
                         {departments?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name}</Option>)}
                     </Select>
 
@@ -94,10 +94,10 @@ const ModalBox = ({ close }: { close: () => void }) => {
                     </Select>
                 </div>
                 <div className='flex w-full gap-3 py-7'>
-                    <Button className='flex-1 hover:bg-green-500 hover:text-white active: '>
+                    <Button className='flex-1 hover:bg-green-500 hover:text-white active: ' type='submit'>
                         Save
                     </Button>
-                    <Button className='flex-1 hover:bg-red-500 hover:text-white '>
+                    <Button className='flex-1 hover:bg-red-500 hover:text-white ' onClick={close}>
                         Cancel
                     </Button>
                 </div>
@@ -175,6 +175,7 @@ function handleSubmit(roles: any, closer: () => void) {
             dept_id: e.currentTarget['department'].options[e.currentTarget['department'].selectedIndex].id as string,
             is_advisor: e.currentTarget['advisor'].options[e.currentTarget['advisor'].selectedIndex].value?.toLowerCase() === "yes" ? true : false,
         }
+        console.log(userData)
         supabase
             .from('users')
             .insert(userData)
