@@ -17,13 +17,16 @@ import { Input } from "@/components/inputs/input";
 import { getBatchFromDB, useAuth } from "@/components/AuthContext";
 import { batch } from "@/utils/supbase/supabase";
 import { supabase } from "@/utils/supbase/supabaseClient";
+import { Option, Select } from "@/components/select/select";
 
 const header = [
   "No.",
   "Batch",
   "", "", ""
 ];
-
+const currentYear = new Date().getFullYear() as number
+const startYears = Array.from({ length: 25 }, (_, i) => currentYear + 5 - i)
+const endYears = Array.from({ length: 25 }, (_, i) => currentYear - 10 + i)
 export const Batch = () => {
   const { Modal, open, close } = useModal({ fadeTime: 300, title: "Add Batch" });
   function ModalLayout() {
@@ -43,8 +46,12 @@ export const Batch = () => {
   );
 };
 const TopBarSection = ({ openModal }: { openModal: () => void }) => {
+  const { setBatch } = useAuth()
   return (
     <TopBar name="Staff">
+      <Button onClick={() => {
+        getBatchFromDB().then(res => setBatch(res as batch['Row'][]))
+      }}>Reload</Button>
       <Button onClick={openModal}>Add Batch</Button>
       {/* <Button>Import</Button>
       <Button className="flex gap-2">
@@ -55,6 +62,7 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   );
 };
 const ModalBox = ({ close }: any) => {
+
   const { setBatch } = useAuth()
   function closer() {
     close()
@@ -64,15 +72,21 @@ const ModalBox = ({ close }: any) => {
     <form onSubmit={handleSubmit(closer)}>
       <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
         <div className="flex w-full gap-3">
-          <Input id="start" placeholder="Enter name">Start Year</Input>
-          <Input id='end' placeholder="Enter email">End Year</Input>
+          <Select header="Start Year" id="start">
+            {startYears.map((item, index) => <Option key={index} selected={currentYear === item} >{item}</Option>)}
+            {/* <Option></Option> */}
+          </Select>
+          <Select header="End Year" id="end">
+            {endYears.map((item, index) => <Option key={index} selected={currentYear + 4 === item}>{item}</Option>)}
+            {/* <Option></Option> */}
+          </Select>
         </div>
 
         <div className="flex w-full gap-3 py-7">
-          <Button className="flex-1 hover:bg-green-500 hover:text-white active: ">
+          <Button className="flex-1 hover:bg-green-500 hover:text-white active:" type="submit">
             Save
           </Button>
-          <Button className="flex-1 hover:bg-red-500 hover:text-white ">
+          <Button className="flex-1 hover:bg-red-500 hover:text-white " onClick={close}>
             Cancel
           </Button>
         </div>
@@ -112,8 +126,8 @@ function handleSubmit(closer: () => void) {
     event.preventDefault();
     const e: any = event
     const batchData = {
-      start_year: e.currentTarget['start'].value as string,
-      end_year: e.currentTarget['end'].value as string
+      start_year: e.currentTarget['start'].options[e.currentTarget['start'].selectedIndex].value as string,
+      end_year: e.currentTarget['end'].options[e.currentTarget['end'].selectedIndex].value as string,
     }
     supabase
       .from('batch')
