@@ -12,6 +12,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.8",
     "axios": "^1.6.7",
+    "convert-csv-to-json": "^2.37.0",
+    "csv-parse": "^5.5.5",
+    "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
@@ -19,6 +22,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
+    "@types/papaparse": "^5.3.14",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",

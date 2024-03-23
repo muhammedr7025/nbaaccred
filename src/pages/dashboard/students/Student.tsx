@@ -13,6 +13,8 @@ import React, { useEffect } from 'react'
 import { useAuth } from '@/components/AuthContext'
 import { supabase } from '@/utils/supbase/supabaseClient'
 import { createPortal } from 'react-dom'
+import { convertCsvToJson } from '@/utils/convertCsvToJson'
+import { bulkImportStudent } from './bulkImport'
 
 const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "Maths", "Average", "Higher Secondary", "KEAM", "College Rank", "Batch", "Department", "Proof", "Remark",
     "Action"
@@ -37,15 +39,32 @@ export const Student = () => {
     useEffect(() => {
         getStudents().then(setStudent)
     }, [])
-
+    const [data, setData] = React.useState<any[]>([])
+    const { Modal: ModalImport, open: openImport, close: closeImport } = useModal({ fadeTime: 300, title: "Import Student Data" })
     return (
         <>
             <BoxLayout
                 topBar={<TopBar name='Staff'>
                     <Button >Reload</Button>
                     <Button onClick={open}>Add Student</Button>
-                    {/* <Button>Import</Button>
-                    <Button className='flex gap-2'>
+                    <Button onClick={openImport}>Import</Button>
+                    {createPortal(
+                        <ModalImport>
+                            <form onSubmit={(e) => {
+                                e.preventDefault()
+                                const file = e.currentTarget['import'].files[0]
+                                convertCsvToJson(file).then((data) => {
+                                    bulkImportStudent(data)
+                                })
+                            }} className='flex flex-col gap-3 pt-5'>
+                                <Input name='import' type="file" />
+                                <Button type='submit'>Import</Button>
+                            </form>
+                        </ModalImport>
+                        ,
+                        document.body
+                    )}
+                    {/* <Button className='flex gap-2'>
                         <DownloadIcon />
                         CSV
                     </Button> */}
@@ -156,7 +175,7 @@ const ModalBox = ({ close, setStudent }: { close: () => void, setStudent: React.
                     <Input id='adm_no' required placeholder='Enter admission number' >Admission No. </Input>
                 </div>
                 <div className='flex w-full gap-3'>
-                    <Input id='mobile' required placeholder='Enter mobile'>Mobile</Input>
+                    <Input id='mobile' placeholder='Enter mobile'>Mobile</Input>
 
                     <Select id='gender' header='Gender' >
                         {genders?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
@@ -219,7 +238,6 @@ export function DeleteStudentModal({ close, setValues = () => { }, id }: any) {
             .delete()
             .eq('id', id)
             .then((res: any) => {
-                console.log(res)
                 if (res.status === 204) {
                     getStudents().then(setValues)
                     close()
@@ -246,3 +264,4 @@ export function DeleteStudentModal({ close, setValues = () => { }, id }: any) {
         </form>
     )
 }
+
