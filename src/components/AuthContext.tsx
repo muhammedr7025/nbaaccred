@@ -7,16 +7,13 @@ import { createContext, useContext, useEffect, useState } from "react";
 type auth = {
     email: string,
     password: string,
-    name: string,
-    mobile: string
-    extras?: any
 }
 export type departmentType = department['Row']
 type IAuthContext = {
     isLoading: boolean
     session: Session | null
     handleSignIn: (email: string, password: string) => void
-    handleSignUp: ({ }: auth) => Promise<AuthResponse>
+    handleSignUp: ({ }: auth) => Promise<AuthResponse | any>
     signOut: () => void
     batchs: batch['Row'][]
     departments: departmentType[]
@@ -87,20 +84,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             })
     }
 
-    const handleSignUp = async ({ email, password, name, mobile, ...extras }: auth) => {
-        const obj = {
-            email: email,
-            password: password,
-            phone: mobile,
-            options: {
-                data: {
-                    name: name,
-                    ...extras.extras
-                }
-            }
+    const handleSignUp = async ({ email, password, }: auth) => {
+        const { data, error } = await checkIfUserExists(email)
+        if (error) {
+            console.error(error)
+            return
         }
-        console.log(obj)
-        return supabase.auth.signUp(obj)
+        else if (data) {
+            return supabase.auth.signUp({
+                email,
+                password
+            })
+        }
+        else return
     }
     return (
         <AuthContext.Provider value={{
@@ -212,4 +208,12 @@ async function getRoles() {
                 return data
             }
         })
+}
+
+function checkIfUserExists(email: string) {
+    return supabase.from('users')
+        .select('id')
+        .eq('email', email)
+        .single()
+
 }
