@@ -4,7 +4,7 @@ import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/buttons/default'
 // import { DownloadIcon } from '@/assets/SvgTsx/download'
 import deleteIcon from '@assets/svg/deleteIcon.svg'
-
+import { Helmet } from 'react-helmet';
 import { Pagination } from '@/components/Pagination'
 import { Input } from '@/components/inputs/input'
 import { Option, Select } from '@/components/select/select'
@@ -21,6 +21,7 @@ const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "M
 ]
 type modalType = 'delete' | 'add' | undefined
 export const Student = () => {
+
     const { Modal, open, close, } = useModal({ fadeTime: 300, title: "Add Student" })
     const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Student" })
 
@@ -29,6 +30,7 @@ export const Student = () => {
     function Modals() {
         return (
             <div id='modals'>
+
                 <Modal>
                     <ModalBox close={close} setStudent={setStudent} />
                 </Modal >
@@ -43,6 +45,10 @@ export const Student = () => {
     const { Modal: ModalImport, open: openImport, close: closeImport } = useModal({ fadeTime: 300, title: "Import Student Data" })
     return (
         <>
+            <Helmet>
+                <title>Student</title>
+                <meta name="description" content="Student List" />
+            </Helmet>
             <BoxLayout
                 topBar={<TopBar name='Staff'>
                     <Button >Reload</Button>

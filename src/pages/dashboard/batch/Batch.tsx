@@ -22,6 +22,7 @@ import { supabase } from "@/utils/supbase/supabaseClient";
 import { Option, Select } from "@/components/select/select";
 import { createPortal } from "react-dom";
 import { batchType } from "@/types/tables";
+import { Helmet } from "react-helmet";
 
 const header = [
   "No.",
@@ -52,6 +53,10 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   const { setBatch } = useAuth()
   return (
     <TopBar name="Staff">
+      <Helmet>
+        <title>Batch</title>
+        <meta name="description" content="Batch List" />
+      </Helmet>
       <Button onClick={() => {
         getBatchFromDB().then(res => setBatch(res as batch['Row'][]))
       }}>Reload</Button>

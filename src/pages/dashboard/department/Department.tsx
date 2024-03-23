@@ -21,6 +21,7 @@ import { supabase } from "@/utils/supbase/supabaseClient";
 import { DownloadIcon } from "@/assets/SvgTsx/download";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { Helmet } from "react-helmet";
 
 const header = [
   "Code",
@@ -53,6 +54,10 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   }
   return (
     <TopBar name="Department">
+      <Helmet>
+        <title>Department</title>
+        <meta name="description" content="Department List" />
+      </Helmet>
       <Button onClick={reload}>Reload</Button>
       <Button onClick={openModal}>Add Department</Button>
       {/* <Button>Import</Button>

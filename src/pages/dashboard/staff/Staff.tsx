@@ -12,6 +12,7 @@ import { useAuth } from '@/components/AuthContext'
 import React from 'react'
 import { createPortal } from 'react-dom'
 import deleteIcon from '@assets/svg/deleteIcon.svg'
+import { Helmet } from 'react-helmet'
 
 const header: staffHeaderType[] = ["Name", "Mobile", "Email", "Advisor", "Department",
     "Batch",
@@ -30,19 +31,25 @@ export const Staff = () => {
         )
     }
     return (
-        <BoxLayout
-            topBar={
-                <TopBarSection openModal={open} />
-            }
-            table={
-                <TableSection staff={staff} />
-            }
-            pagination={
-                <Pagination start={1} total={5} />
-            }
-            modal={<ModalLayout />}
-        />
+        <>
+            <Helmet>
+                <title>Staff</title>
+                <meta name="description" content="Staff List" />
+            </Helmet>
+            <BoxLayout
+                topBar={
+                    <TopBarSection openModal={open} />
+                }
+                table={
+                    <TableSection staff={staff} />
+                }
+                pagination={
+                    <Pagination start={1} total={5} />
+                }
+                modal={<ModalLayout />}
+            />
 
+        </>
     )
 }
 const TopBarSection = ({ openModal }: { openModal: () => void }) => {
