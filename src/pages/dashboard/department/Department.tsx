@@ -2,6 +2,7 @@
 import { Pagination } from "@/components/Pagination";
 import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/buttons/default";
+import deleteIcon from '@assets/svg/deleteIcon.svg'
 
 import {
   TBody,
@@ -19,13 +20,14 @@ import { departmentType, getDepartmentsFromDB, useAuth } from "@/components/Auth
 import { supabase } from "@/utils/supbase/supabaseClient";
 import { DownloadIcon } from "@/assets/SvgTsx/download";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 const header = [
   "Code",
   "Department",
   "Mission",
   "Vision",
-  // "Action"
+  "Action"
 ];
 export const Department = () => {
   const { Modal, open, close } = useModal({ fadeTime: 300, title: "Add Department" });
@@ -105,6 +107,8 @@ const TableSection = () => {
     }
   }
   const { departments } = useAuth()
+  const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete S" })
+
   return (
     <Table>
       <Thead>
@@ -133,10 +137,17 @@ const TableSection = () => {
                 <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
               }
             </TBodyCell>
-            {/* <TBodyCell className="flex gap-2 ">
-              <button onClick={item.edit}>Edit</button>
-              <button onClick={item.delete}>Delete</button>
-            </TBodyCell> */}
+            <TBodyCell className="flex gap-2 ">
+              <button className='cursor-pointer' onClick={openDelete}>
+                <img src={deleteIcon} alt="edit" />
+              </button>
+              {createPortal(
+                <ModalDelete>
+                  <DeleteModal close={closeDelete} id={item.id} />
+                </ModalDelete>,
+                document.body
+              )}
+            </TBodyCell>
           </TBodyRow>
         ))}
       </TBody>
@@ -266,4 +277,37 @@ function handleDownload(bucketName: string, path: string | null) {
       }
     })
   }
+}
+export function DeleteModal({ close, setValues = () => { }, id }: any) {
+  const { setDepartments } = useAuth()
+  function handleSubmit(e: any) {
+    e.preventDefault();
+    supabase
+      .from('departments')
+      .delete()
+      .eq('id', id)
+      .then((res: any) => {
+        if (res.status === 204) {
+          getDepartmentsFromDB().then((res) => setDepartments(res as departmentType[]))
+          close()
+        }
+      })
+  }
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="flex flex-row flex-wrap gap-4 w-[250px] justify-center mt-8">
+        <div className='flex w-full  justify-center pb-3'>
+          Do you want to delete?
+        </div>
+        <div className='flex w-full gap-3 '>
+          <Button type='submit' className='flex-1 hover:bg-red-500 hover:text-white active: '>
+            Delete
+          </Button>
+          <Button onClick={close} className='flex-1 hover:bg-green-500 hover:text-white '>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </form>
+  )
 }
