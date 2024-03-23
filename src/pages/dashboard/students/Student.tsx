@@ -83,7 +83,7 @@ export const Student = () => {
                                             </button>
                                             {createPortal(
                                                 <ModalDelete>
-                                                    <DeleteStudentModal close={closeDelete} setStudent={setStudent} id={item.user_id} />
+                                                    <DeleteStudentModal close={closeDelete} setValues={setStudent} id={item.user_id} />
                                                 </ModalDelete>,
                                                 document.body
                                             )}
