@@ -44,7 +44,7 @@ export const useModal = ({ fadeTime: fadeTime = 300, viewModal: viewModal = fals
         return (
             <div ref={containerRef}
                 onClick={close}
-                className=' cursor-pointer   z-10 absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center' style={{ display: viewBlock ? 'flex' : 'none' }}>
+                className=' cursor-pointer bg-black/70 z-10 absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center' style={{ display: viewBlock ? 'flex' : 'none' }}>
                 <div onClick={(e) => e.stopPropagation()} className={`drop-shadow-[0_0_5px_rgba(0,0,0,0.2)] p-8  rounded-xl bg-white 
                 cursor-auto transition:opacity duration-300 opacity-100 min-h-10 min-w-10 
                 max-h-[80vh] overflow-auto 

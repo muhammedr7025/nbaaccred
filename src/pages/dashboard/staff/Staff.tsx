@@ -10,10 +10,12 @@ import { Option, Select } from '@/components/select/select'
 import { supabase } from '@/utils/supbase/supabaseClient'
 import { useAuth } from '@/components/AuthContext'
 import React from 'react'
+import { createPortal } from 'react-dom'
+import deleteIcon from '@assets/svg/deleteIcon.svg'
 
 const header: staffHeaderType[] = ["Name", "Mobile", "Email", "Advisor", "Department",
     "Batch",
-    // "Action"
+    "Action"
 ]
 
 export const Staff = () => {
@@ -115,7 +117,8 @@ const ModalBox = ({ close }: { close: () => void }) => {
         </form>
     )
 }
-const TableSection = ({ staff }: any) => {
+const TableSection = ({ staff, }: any) => {
+    const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete S" })
 
     return (
         <Table>
@@ -135,10 +138,17 @@ const TableSection = ({ staff }: any) => {
                                 <TBodyCell>{item.is_advisor ? "Yes" : "No"}</TBodyCell>
                                 <TBodyCell>{item.dept}</TBodyCell>
                                 <TBodyCell>{item?.batch}</TBodyCell>
-                                {/* <TBodyCell className='flex gap-2 '>
-                                    <button onClick={item.edit}>Edit</button>
-                                    <button onClick={item.delete}>Delete</button>
-                                </TBodyCell> */}
+                                <TBodyCell className='flex gap-2 justify-center items-center'>
+                                    <button className='cursor-pointer' onClick={openDelete}>
+                                        <img src={deleteIcon} alt="edit" />
+                                    </button>
+                                    {createPortal(
+                                        <ModalDelete>
+                                            <DeleteStaffModal close={closeDelete} id={item.id} />
+                                        </ModalDelete>,
+                                        document.body
+                                    )}
+                                </TBodyCell>
                             </TBodyRow>
                         )
                     else <div></div>
@@ -160,15 +170,19 @@ async function getStaffFromDB() {
     return supabase.from('staff').select(`is_advisor,users(id,name,phone,email),departments(code),batch(start_year,end_year)`)
         .then((res: any) => {
 
-            const data = res.data.map((item: any) => ({
-                ...item,
-                id: item.users.id,
-                name: item.users.name,
-                phone: item.users.phone,
-                email: item.users.email,
-                dept: item.departments.code,
-                batch: item?.batch ? `${item?.batch.start_year}-${item?.batch.end_year}` : ''
-            }))
+            const data = res.data.map((item: any) => {
+                const id = item.users.id
+
+                return ({
+                    ...item,
+                    id: id,
+                    name: item.users.name,
+                    phone: item.users.phone,
+                    email: item.users.email,
+                    dept: item.departments.code,
+                    batch: item?.batch ? `${item?.batch.start_year}-${item?.batch.end_year}` : ''
+                })
+            })
             console.log(data)
             if (data.length > 0)
                 sessionStorage.setItem('staff', JSON.stringify(data))
@@ -226,4 +240,41 @@ function staffData(userId: string, data: any) {
         ...data,
         user_id: userId
     })
+}
+
+export function DeleteStaffModal({ close, setValues = () => { }, id }: any) {
+    const { staff } = useAuth()
+    function handleSubmit(e: any) {
+        e.preventDefault();
+        supabase
+            .from('users')
+            .delete()
+            .eq('id', id)
+            .then((res: any) => {
+                console.log(res)
+                if (res.status === 204) {
+                    getStaffFromDB().then(staff.set)
+                    close()
+                    console.log('deleted')
+
+                }
+            })
+    }
+    return (
+        <form onSubmit={handleSubmit}>
+            <div className="flex flex-row flex-wrap gap-4 w-[250px] justify-center mt-8">
+                <div className='flex w-full  justify-center pb-3'>
+                    Do you want to delete?
+                </div>
+                <div className='flex w-full gap-3 '>
+                    <Button type='submit' className='flex-1 hover:bg-red-500 hover:text-white active: '>
+                        Delete
+                    </Button>
+                    <Button onClick={close} className='flex-1 hover:bg-green-500 hover:text-white '>
+                        Cancel
+                    </Button>
+                </div>
+            </div>
+        </form>
+    )
 }

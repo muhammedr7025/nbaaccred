@@ -3,6 +3,8 @@ import { BoxLayout } from '../boxLayout'
 import { TopBar } from '@/components/TopBar'
 import { Button } from '@/components/buttons/default'
 // import { DownloadIcon } from '@/assets/SvgTsx/download'
+import deleteIcon from '@assets/svg/deleteIcon.svg'
+
 import { Pagination } from '@/components/Pagination'
 import { Input } from '@/components/inputs/input'
 import { Option, Select } from '@/components/select/select'
@@ -10,13 +12,28 @@ import { useModal } from '@/components/modal'
 import React, { useEffect } from 'react'
 import { useAuth } from '@/components/AuthContext'
 import { supabase } from '@/utils/supbase/supabaseClient'
+import { createPortal } from 'react-dom'
 
 const header = ["Reg.No", "Name", "Adm.No", "Gender", "Physics", "Chemistry", "Maths", "Average", "Higher Secondary", "KEAM", "College Rank", "Batch", "Department", "Proof", "Remark",
-    // "Action"
+    "Action"
 ]
+type modalType = 'delete' | 'add' | undefined
 export const Student = () => {
     const { Modal, open, close, } = useModal({ fadeTime: 300, title: "Add Student" })
+    const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Student" })
+
     const [students, setStudent] = React.useState<any[]>([])
+    const [modalToView, setModalToView] = React.useState<modalType>()
+    function Modals() {
+        return (
+            <div id='modals'>
+                <Modal>
+                    <ModalBox close={close} setStudent={setStudent} />
+                </Modal >
+            </div>
+        )
+    }
+
     useEffect(() => {
         getStudents().then(setStudent)
     }, [])
@@ -47,7 +64,6 @@ export const Student = () => {
                                         <TBodyCell>{item.reg_no}</TBodyCell>
                                         <TBodyCell className='font-semibold'>{item.name}</TBodyCell>
                                         <TBodyCell className=''>{item.adm_no}</TBodyCell>
-
                                         <TBodyCell>{item.gender}</TBodyCell>
                                         <TBodyCell>{item.physics}</TBodyCell>
                                         <TBodyCell>{item.chemistry}</TBodyCell>
@@ -61,20 +77,26 @@ export const Student = () => {
                                         <TBodyCell>{''}</TBodyCell>
                                         <TBodyCell>{''}</TBodyCell>
 
-                                        <TBodyCell className='flex gap-2 '>
-                                            <></>
-                                            {/* <button>Edit</button>
-                                            <button>Delete</button> */}
+                                        <TBodyCell className='flex gap-2 justify-center'>
+                                            <button className='cursor-pointer' onClick={openDelete}>
+                                                <img src={deleteIcon} alt="edit" />
+                                            </button>
+                                            {createPortal(
+                                                <ModalDelete>
+                                                    <DeleteStudentModal close={closeDelete} setStudent={setStudent} id={item.user_id} />
+                                                </ModalDelete>,
+                                                document.body
+                                            )}
                                         </TBodyCell>
                                     </TBodyRow>)
                                 else return <TBodyRow><></></TBodyRow>
                             })}
                         </TBody>
-                    </Table>
+                    </Table >
                 }
-                pagination={<Pagination start={1} total={5} />}
-                modal={<Modal><ModalBox close={close} setStudent={setStudent} /></Modal>}
-            /></>
+                pagination={< Pagination start={1} total={5} />}
+                modal={<Modals />}
+            /></ >
     )
 }
 const ModalBox = ({ close, setStudent }: { close: () => void, setStudent: React.Dispatch<React.SetStateAction<any[]>> }) => {
@@ -188,4 +210,39 @@ async function getStudents() {
                 phone: item.users.phone,
             })))
         })
+}
+export function DeleteStudentModal({ close, setValues = () => { }, id }: any) {
+    function handleSubmit(e: any) {
+        e.preventDefault();
+        supabase
+            .from('users')
+            .delete()
+            .eq('id', id)
+            .then((res: any) => {
+                console.log(res)
+                if (res.status === 204) {
+                    getStudents().then(setValues)
+                    close()
+                    console.log('deleted')
+
+                }
+            })
+    }
+    return (
+        <form onSubmit={handleSubmit}>
+            <div className="flex flex-row flex-wrap gap-4 w-[250px] justify-center mt-8">
+                <div className='flex w-full  justify-center pb-3'>
+                    Do you want to delete?
+                </div>
+                <div className='flex w-full gap-3 '>
+                    <Button type='submit' className='flex-1 hover:bg-red-500 hover:text-white active: '>
+                        Delete
+                    </Button>
+                    <Button onClick={close} className='flex-1 hover:bg-green-500 hover:text-white '>
+                        Cancel
+                    </Button>
+                </div>
+            </div>
+        </form>
+    )
 }
