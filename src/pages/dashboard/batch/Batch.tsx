@@ -2,6 +2,8 @@
 import { Pagination } from "@/components/Pagination";
 import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/buttons/default";
+import deleteIcon from '@assets/svg/deleteIcon.svg'
+
 import {
   TBody,
   TBodyCell,
@@ -18,11 +20,12 @@ import { getBatchFromDB, useAuth } from "@/components/AuthContext";
 import { batch } from "@/utils/supbase/supabase";
 import { supabase } from "@/utils/supbase/supabaseClient";
 import { Option, Select } from "@/components/select/select";
+import { createPortal } from "react-dom";
+import { batchType } from "@/types/tables";
 
 const header = [
   "No.",
   "Batch",
-  "", "", ""
 ];
 const currentYear = new Date().getFullYear() as number
 const startYears = Array.from({ length: 25 }, (_, i) => currentYear + 5 - i)
@@ -96,24 +99,33 @@ const ModalBox = ({ close }: any) => {
 };
 const TableSection = () => {
   const { batchs } = useAuth()
+  const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete S" })
+
   return (
     <Table>
       <Thead>
         <THeadRow>
-          {header.map((item, index) => (
-            <THeadCell key={index}>{item}</THeadCell>
-          ))}
+          <THeadCell >No.</THeadCell>
+          <THeadCell className=" text-center">Batch</THeadCell>
+          <THeadCell className=" text-center">Action</THeadCell>
         </THeadRow>
       </Thead>
       <TBody>
         {batchs?.map((item, index) => (
           <TBodyRow key={index} >
             <TBodyCell>{index + 1}</TBodyCell>
-            <TBodyCell >{item.start_year + " - " + item.end_year}</TBodyCell>
-            {/* <TBodyCell className="flex gap-2 ">
-              <button onClick={item.edit}>Edit</button>
-              <button onClick={item.delete}>Delete</button>
-            </TBodyCell> */}
+            <TBodyCell className=" text-center">{item.start_year + " - " + item.end_year}</TBodyCell>
+            <TBodyCell className="flex gap-2 justify-center">
+              <button className='cursor-pointer' onClick={openDelete}>
+                <img src={deleteIcon} alt="edit" />
+              </button>
+              {createPortal(
+                <ModalDelete>
+                  <DeleteModal close={closeDelete} id={item.id} />
+                </ModalDelete>,
+                document.body
+              )}
+            </TBodyCell>
           </TBodyRow>
         ))}
       </TBody>
@@ -135,4 +147,37 @@ function handleSubmit(closer: () => void) {
       .select('id')
       .then(() => closer())
   }
+}
+export function DeleteModal({ close, setValues = () => { }, id }: any) {
+  const { setBatch } = useAuth()
+  function handleSubmit(e: any) {
+    e.preventDefault();
+    supabase
+      .from('batch')
+      .delete()
+      .eq('id', id)
+      .then((res: any) => {
+        if (res.status === 204) {
+          getBatchFromDB().then((res) => setBatch(res as batch['Row'][]))
+          close()
+        }
+      })
+  }
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="flex flex-row flex-wrap gap-4 w-[250px] justify-center mt-8">
+        <div className='flex w-full  justify-center pb-3'>
+          Do you want to delete?
+        </div>
+        <div className='flex w-full gap-3 '>
+          <Button type='submit' className='flex-1 hover:bg-red-500 hover:text-white active: '>
+            Delete
+          </Button>
+          <Button onClick={close} className='flex-1 hover:bg-green-500 hover:text-white '>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </form>
+  )
 }
