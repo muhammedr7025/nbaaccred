@@ -25,9 +25,7 @@ import { createPortal } from "react-dom";
 const header = [
   "Code",
   "Department",
-  "Mission",
-  "Vision",
-  "Action"
+
 ];
 export const Department = () => {
   const { Modal, open, close } = useModal({ fadeTime: 300, title: "Add Department" });
@@ -54,7 +52,7 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
     getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
   }
   return (
-    <TopBar name="Staff">
+    <TopBar name="Department">
       <Button onClick={reload}>Reload</Button>
       <Button onClick={openModal}>Add Department</Button>
       {/* <Button>Import</Button>
@@ -116,6 +114,21 @@ const TableSection = () => {
           {header.map((item, index) => (
             <THeadCell key={index}>{item}</THeadCell>
           ))}
+          <THeadCell>
+            <div className="flex w-full items-center justify-center">
+              Mission
+            </div>
+          </THeadCell>
+          <THeadCell>
+            <div className="flex w-full items-center justify-center">
+              Vision
+            </div>
+          </THeadCell>
+          <THeadCell>
+            <div className="flex w-full items-center justify-center">
+              Action
+            </div>
+          </THeadCell>
         </THeadRow>
       </Thead>
       <TBody>
@@ -124,23 +137,31 @@ const TableSection = () => {
             <TBodyCell className="">{item?.code}</TBodyCell>
             <TBodyCell className="">{item?.name}</TBodyCell>
             <TBodyCell >
-              {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
-                <DownloadIcon />
-              </div> :
-                <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
-              }
+              <div className="flex w-full items-center justify-center">
+
+                {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
+                  <DownloadIcon />
+                </div> :
+                  <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
+                }
+              </div>
             </TBodyCell>
             <TBodyCell >
-              {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
-                <DownloadIcon />
-              </div> :
-                <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
-              }
+              <div className="flex w-full items-center justify-center">
+
+                {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
+                  <DownloadIcon />
+                </div> :
+                  <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
+                }
+              </div>
             </TBodyCell>
-            <TBodyCell className="flex gap-2 ">
-              <button className='cursor-pointer' onClick={openDelete}>
-                <img src={deleteIcon} alt="edit" />
-              </button>
+            <TBodyCell >
+              <div className="flex w-full items-center justify-center">
+                <button className='cursor-pointer ' onClick={openDelete}>
+                  <img src={deleteIcon} alt="edit" />
+                </button>
+              </div>
               {createPortal(
                 <ModalDelete>
                   <DeleteModal close={closeDelete} id={item.id} />
@@ -183,13 +204,13 @@ function UploadSection({ bucketName, name, code, id }: { bucketName: string, nam
   }
   return (
     <div className="flex items-center gap-2">
-      <Button className="cursor-pointer w-fit" onClick={handleUploadButton} >
+      <button className="cursor-pointer w-fit" onClick={handleUploadButton} >
         {file ? 'Upload' :
           <div className="rotate-180">
             <DownloadIcon />
           </div>
         }
-      </Button>
+      </button>
       {start && <Input type="file" className=" h-10"
         onChange={(e) => setFile(e.target.files?.[0])}
       />}

@@ -163,9 +163,9 @@ const ModalBox = ({ close, setStudent }: { close: () => void, setStudent: React.
 
                     </Select>
                 </div>
-                <div className='flex w-full gap-3'>
+                <div className='flex w-full gap-3' defaultValue={'0'}>
                     <Select id='department' header='Department'>
-                        {departments?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name}</Option>)}
+                        {departments?.map((item) => <Option id={`${item?.id}`} value={item?.id} key={item?.id} >{item?.name}</Option>)}
                     </Select>
                     <Select id='batch' header='Batch' placeholder='Selector' >
                         {
