@@ -41,7 +41,7 @@ export async function bulkImportStudent(data: any) {
     }
 
 }
-async function getRoleId(roleName: string) {
+export async function getRoleId(roleName: string) {
     const roles = sessionStorage.getItem('role')
     if (roles) {
         const roleList = JSON.parse(roles)
@@ -56,7 +56,7 @@ async function getRoleId(roleName: string) {
     return role_id
 
 }
-async function getGenderId(gender: string) {
+export async function getGenderId(gender: string) {
     const genders = sessionStorage.getItem('gender')
     if (genders) {
         const genderList = JSON.parse(genders)
@@ -85,6 +85,7 @@ export async function getDepartmentId(deptCode: string) {
 }
 
 export async function getBatchId(years: string) {
+    if (!years) return Promise.resolve()
     const noSpaceYears = years.replace(/ /g, '');
     const [start_year, end_year] = noSpaceYears.split('-')
 
@@ -97,7 +98,6 @@ export async function getBatchId(years: string) {
     }
     const res: any = await supabase.from('batch').select('id').ilike('start_year', `%${start_year}%`)
     sessionStorage.setItem('batch', JSON.stringify(res.data))
-    const batch_id = res.data[0].id
+    const batch_id = res.data[0]?.id ?? null
     return batch_id
-
 }

@@ -13,6 +13,8 @@ import React from 'react'
 import { createPortal } from 'react-dom'
 import deleteIcon from '@assets/svg/deleteIcon.svg'
 import { Helmet } from 'react-helmet'
+import { convertCsvToJson } from '@/utils/convertCsvToJson'
+import { bulkImportStaff } from './bulkImport'
 
 const header: staffHeaderType[] = ["Name", "Mobile", "Email", "Advisor", "Department",
     "Batch",
@@ -57,11 +59,29 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
     function getStaff() {
         getStaffFromDB().then(staff.set)
     }
+    const { Modal: ModalImport, open: openImport, close: closeImport } = useModal({ fadeTime: 300, title: "Import Student Data" })
+
     return (
         <TopBar name='Staff' >
             <Button onClick={getStaff}>Reload</Button>
             <Button onClick={openModal}>Add Staff</Button>
-            {/* <Button>Import</Button> */}
+            <Button onClick={openImport}>Import</Button>
+            {createPortal(
+                <ModalImport>
+                    <form onSubmit={(e) => {
+                        e.preventDefault()
+                        const file = e.currentTarget['import'].files[0]
+                        convertCsvToJson(file).then((data) => {
+                            bulkImportStaff(data)
+                        })
+                    }} className='flex flex-col gap-3 pt-5'>
+                        <Input name='import' type="file" />
+                        <Button type='submit'>Import</Button>
+                    </form>
+                </ModalImport>
+                ,
+                document.body
+            )}
             {/* <Button className='flex gap-2'>
                 <DownloadIcon />
                 CSV
