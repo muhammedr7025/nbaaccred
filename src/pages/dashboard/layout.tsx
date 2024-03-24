@@ -31,6 +31,7 @@ const sideNavigationMenu = [
     { url: '/dashboard/batch', name: 'Batch' },
     { url: '/dashboard/department', name: 'Department' },
     { url: '/dashboard/staff', name: 'Staff' },
+    { url: '/dashboard/subject', name: 'Subject' },
 ]
 
 const TopNavigation = () => {
