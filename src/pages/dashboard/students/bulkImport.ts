@@ -1,7 +1,6 @@
 import { supabase } from "@/utils/supbase/supabaseClient";
 
 export async function bulkImportStudent(data: any) {
-    console.log(data)
     try {
         const role_id = await getRoleId('student')
         const promises = data.map(
@@ -72,17 +71,14 @@ async function getGenderId(gender: string) {
     return gender_id
 }
 export async function getDepartmentId(deptCode: string) {
-    console.log(deptCode)
     const departments = sessionStorage.getItem('dept')
     if (departments) {
         const deptList = JSON.parse(departments)
         const dept = deptList.find((dept: any) => dept.code?.toLowerCase() === deptCode?.toLowerCase())
-        console.log(dept)
         if (dept)
             return dept.id
     }
     const res: any = await supabase.from('departments').select('id').ilike('code', `%${deptCode.toLowerCase()}%`)
-    console.log(res.data)
     sessionStorage.setItem('dept', JSON.stringify(res.data))
     const dept_id = res.data[0].id
     return dept_id
@@ -95,9 +91,7 @@ export async function getBatchId(years: string) {
     const batches = sessionStorage.getItem('batch')
     if (batches) {
         const batchList = JSON.parse(batches)
-        console.log(batchList, start_year, end_year)
         const batch = batchList.find((batch: any) => batch.start_year === start_year)
-        console.log(batch)
         if (batch)
             return batch.id
     }
