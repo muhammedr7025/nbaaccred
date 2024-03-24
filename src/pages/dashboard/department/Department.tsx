@@ -22,6 +22,8 @@ import { DownloadIcon } from "@/assets/SvgTsx/download";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Helmet } from "react-helmet";
+import { convertCsvToJson } from "@/utils/convertCsvToJson";
+import { bulkImportdepartments } from "./bulkImport";
 
 const header = [
   "Code",
@@ -48,6 +50,7 @@ export const Department = () => {
 };
 const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   const { setDepartments } = useAuth()
+  const { Modal: ModalImport, open: openImport, close: closeImport } = useModal({ fadeTime: 300, title: "Import Student Data" })
 
   function reload() {
     getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
@@ -60,11 +63,27 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
       </Helmet>
       <Button onClick={reload}>Reload</Button>
       <Button onClick={openModal}>Add Department</Button>
-      {/* <Button>Import</Button>
-      <Button className="flex gap-2">
+      <Button onClick={openImport}>Import</Button>
+      {createPortal(
+        <ModalImport>
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            const file = e.currentTarget['import'].files[0]
+            convertCsvToJson(file).then((data) => {
+              bulkImportdepartments(data)
+            })
+          }} className='flex flex-col gap-3 pt-5'>
+            <Input name='import' type="file" />
+            <Button type='submit'>Import</Button>
+          </form>
+        </ModalImport>
+        ,
+        document.body
+      )}
+      {/* <Button className="flex gap-2">
         <DownloadIcon />
         CSV
-      </Button> */}
+      </Button>  */}
     </TopBar>
   );
 };
