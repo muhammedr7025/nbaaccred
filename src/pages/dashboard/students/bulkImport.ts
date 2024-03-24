@@ -1,3 +1,4 @@
+import { getDepartments } from "@/components/AuthContext";
 import { student } from "@/utils/supbase/supabase";
 import { supabase } from "@/utils/supbase/supabaseClient";
 
@@ -17,23 +18,28 @@ export async function bulkImportStudent(data: any) {
         const userData = await Promise.all(promises);
         const newData = await supabase.from('users').upsert(userData, { ignoreDuplicates: true, onConflict: 'email' }).select('id,email')
         if (newData?.data) {
-            const studentData = newData.data.map((item: any) => {
+            const studentData = newData.data.map(async (item: any) => {
                 const filteredData = data.find((dataItem: any) => dataItem.email === item.email)
-
+                console.log(filteredData)
                 if (filteredData) {
                     return {
                         adm_no: filteredData.adm_no,
+                        reg_no: filteredData.reg_no,
                         physics: filteredData.physics,
                         chemistry: filteredData.chemistry,
                         maths: filteredData.maths,
                         pre_degree: filteredData.pre_degree,
                         keam: filteredData.keam,
-                        rank: filteredData.rank,
-                        batch_id: filteredData.batch_id,
-                        dept_id: filteredData.dept_id,
+                        rank: filteredData.clg_rank,
+                        batch_id: await getBatchId(filteredData.batch),
+                        dept_id: await getDepartmentId(filteredData.dept),
+                        user_id: item.id,
                     }
                 }
             })
+            const studentDataList = await Promise.all(studentData)
+            const newStudentData = await supabase.from('students').upsert(studentDataList, { ignoreDuplicates: true, onConflict: 'user_id,rank' }).select('')
+            console.log(newStudentData)
         }
     } catch (error) {
         console.log(error)
@@ -68,4 +74,40 @@ async function getGenderId(gender: string) {
     sessionStorage.setItem('gender', JSON.stringify(res.data))
     const gender_id = res.data[0].id
     return gender_id
+}
+export async function getDepartmentId(deptCode: string) {
+    console.log(deptCode)
+    const departments = sessionStorage.getItem('dept')
+    if (departments) {
+        const deptList = JSON.parse(departments)
+        const dept = deptList.find((dept: any) => dept.code?.toLowerCase() === deptCode?.toLowerCase())
+        console.log(dept)
+        if (dept)
+            return dept.id
+    }
+    const res: any = await supabase.from('departments').select('id').ilike('code', `%${deptCode.toLowerCase()}%`)
+    console.log(res.data)
+    sessionStorage.setItem('dept', JSON.stringify(res.data))
+    const dept_id = res.data[0].id
+    return dept_id
+}
+
+export async function getBatchId(years: string) {
+    const noSpaceYears = years.replace(/ /g, '');
+    const [start_year, end_year] = noSpaceYears.split('-')
+
+    const batches = sessionStorage.getItem('batch')
+    if (batches) {
+        const batchList = JSON.parse(batches)
+        console.log(batchList, start_year, end_year)
+        const batch = batchList.find((batch: any) => batch.start_year === start_year)
+        console.log(batch)
+        if (batch)
+            return batch.id
+    }
+    const res: any = await supabase.from('batch').select('id').ilike('start_year', `%${start_year}%`)
+    sessionStorage.setItem('batch', JSON.stringify(res.data))
+    const batch_id = res.data[0].id
+    return batch_id
+
 }

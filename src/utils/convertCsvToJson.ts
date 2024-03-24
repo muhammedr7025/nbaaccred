@@ -6,7 +6,7 @@ export async function convertCsvToJson(file: File) {
     const data = await file.text();
     const csvData = data.toString();
     const csv = csvData.split('\n');
-    const headers = csv[0].split(',');
+    const headers = csv[0].split(',').map((header) => header.trim());
     const rows = csv.slice(1).map((row) => {
         const values = row.split(',');
         const obj: { [key: string]: string } = {};
