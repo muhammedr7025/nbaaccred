@@ -24,7 +24,7 @@ import { createPortal } from "react-dom";
 import { Helmet } from "react-helmet";
 import { convertCsvToJson } from "@/utils/convertCsvToJson";
 import { bulkImportdepartments } from "./bulkImport";
-
+import editIcon from '@assets/svg/editIcon.svg';
 const header = [
   "Code",
   "Department",
@@ -87,7 +87,7 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
     </TopBar>
   );
 };
-const ModalBox = ({ close }: { close: () => void }) => {
+const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any }) => {
   const { setDepartments } = useAuth()
 
 
@@ -96,15 +96,15 @@ const ModalBox = ({ close }: { close: () => void }) => {
     getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
   }
   return (
-    <form onSubmit={handleSubmit(closer)}>
+    <form onSubmit={handleSubmit(closer, dataReceived)}>
       <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
         <div className="flex w-full gap-3">
-          <Input placeholder="Enter name" id="name">Name</Input>
-          <Input placeholder="Enter name" id="code">Code</Input>
+          <Input placeholder="Enter name" defaultValue={dataReceived?.name} id="name">Name</Input>
+          <Input placeholder="Enter name" defaultValue={dataReceived?.code} id="code">Code</Input>
         </div>
         <div className="flex w-full gap-3">
-          <Input type="file" id="mission">Mission</Input>
-          <Input type="file" id="vision">Vision</Input>
+          <Input type="file" id="mission">{dataReceived?.mission_url ? 'Add New ' : ''}Mission</Input>
+          <Input type="file" id="vision" >{dataReceived?.vision_url ? 'Add New ' : ''}Vision</Input>
         </div>
         <div className="flex w-full gap-3 py-7">
           <Button className="flex-1 hover:bg-green-500 hover:text-white active: " type="submit">
@@ -130,6 +130,7 @@ const TableSection = () => {
   }
   const { departments } = useAuth()
   const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Department" })
+  const { Modal: ModalEdit, open: openEdit, close: closeEdit, } = useModal({ fadeTime: 300, title: "Edit Department" })
   const [item, setItem] = useState({} as any)
   return (
     <>
@@ -182,15 +183,21 @@ const TableSection = () => {
                 </div>
               </TBodyCell>
               <TBodyCell >
-                <div className="flex w-full items-center justify-center">
+                <div className="flex w-full items-center justify-center gap-5">
+                  <button className='cursor-pointer ' onClick={() => {
+                    setItem(item)
+                    openEdit()
+                  }}>
+                    <img src={editIcon} alt="edit" />
+                  </button>
                   <button className='cursor-pointer ' onClick={() => {
                     setItem(item)
                     openDelete()
                   }}>
                     <img src={deleteIcon} alt="edit" />
                   </button>
-                </div>
 
+                </div>
               </TBodyCell>
             </TBodyRow>
           ))}
@@ -198,9 +205,15 @@ const TableSection = () => {
       </Table>
 
       {createPortal(
-        <ModalDelete>
-          <DeleteModal close={closeDelete} id={item.id} />
-        </ModalDelete>,
+        <>
+          <ModalEdit>
+            <ModalBox close={closeEdit} data={item} />
+          </ModalEdit>
+          <ModalDelete>
+            <DeleteModal close={closeDelete} id={item.id} />
+          </ModalDelete>
+        </>
+        ,
         document.body
       )}
     </>
@@ -248,8 +261,8 @@ function UploadSection({ bucketName, name, code, id }: { bucketName: string, nam
     </div>
   )
 }
-function handleSubmit(closer: () => void) {
-  return (event: React.FormEvent<HTMLFormElement>) => {
+function handleSubmit(closer: () => void, data: any) {
+  return async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const e: any = event
     const departmentData = {
@@ -273,14 +286,26 @@ function handleSubmit(closer: () => void) {
       departmentData.vision_url = vision.path
       promises.push(visionUpload)
     }
-
-    Promise.all(promises).then(() => {
-      supabase
-        .from('departments')
-        .insert(departmentData)
-        .select('id')
-        .then(() => closer())
-    })
+    if (data) {
+      const currData = {
+        name: departmentData?.name,
+        code: departmentData?.code,
+        mission_url: departmentData?.mission_url ?? null,
+        vision_url: departmentData?.vision_url ?? null
+      }
+      const res = await supabase.from('departments').update(currData).eq('id', data.id)
+      if (res.status === 204) {
+        closer()
+      }
+    } else {
+      Promise.all(promises).then(() => {
+        supabase
+          .from('departments')
+          .insert(departmentData)
+          .select('id')
+          .then(() => closer())
+      })
+    }
   }
 }
 export function getFilePath(file: File | undefined, name: string) {
