@@ -2,6 +2,9 @@
 import { Pagination } from "@/components/Pagination";
 import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/buttons/default";
+import deleteIcon from '@assets/svg/deleteIcon.svg'
+import editIcon from '@assets/svg/editIcon.svg'
+
 import {
   TBody,
   TBodyCell,
@@ -18,11 +21,14 @@ import { getBatchFromDB, useAuth } from "@/components/AuthContext";
 import { batch } from "@/utils/supbase/supabase";
 import { supabase } from "@/utils/supbase/supabaseClient";
 import { Option, Select } from "@/components/select/select";
+import { createPortal } from "react-dom";
+import { batchType } from "@/types/tables";
+import { Helmet } from "react-helmet";
+import { useState } from "react";
 
 const header = [
   "No.",
   "Batch",
-  "", "", ""
 ];
 const currentYear = new Date().getFullYear() as number
 const startYears = Array.from({ length: 25 }, (_, i) => currentYear + 5 - i)
@@ -49,6 +55,10 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   const { setBatch } = useAuth()
   return (
     <TopBar name="Staff">
+      <Helmet>
+        <title>Batch</title>
+        <meta name="description" content="Batch List" />
+      </Helmet>
       <Button onClick={() => {
         getBatchFromDB().then(res => setBatch(res as batch['Row'][]))
       }}>Reload</Button>
@@ -61,7 +71,7 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
     </TopBar>
   );
 };
-const ModalBox = ({ close }: any) => {
+const ModalBox = ({ close, data }: any) => {
 
   const { setBatch } = useAuth()
   function closer() {
@@ -69,14 +79,14 @@ const ModalBox = ({ close }: any) => {
     getBatchFromDB().then(data => setBatch(data as batch['Row'][]))
   }
   return (
-    <form onSubmit={handleSubmit(closer)}>
+    <form onSubmit={handleSubmit(closer, data)}>
       <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
         <div className="flex w-full gap-3">
-          <Select header="Start Year" id="start" defaultValue={currentYear}>
+          <Select header="Start Year" id="start" defaultValue={data?.start_year ?? currentYear}>
             {startYears.map((item, index) => <Option key={index} value={item} >{item}</Option>)}
             {/* <Option></Option> */}
           </Select>
-          <Select header="End Year" id="end" defaultValue={currentYear + 4}>
+          <Select header="End Year" id="end" defaultValue={data?.end_year ?? currentYear + 4}>
             {endYears.map((item, index) => <Option key={index} value={item} >{item}</Option>)}
             {/* <Option></Option> */}
           </Select>
@@ -96,43 +106,112 @@ const ModalBox = ({ close }: any) => {
 };
 const TableSection = () => {
   const { batchs } = useAuth()
+  const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Batch" })
+  const [item, setItem] = useState({} as any)
+  const { Modal: ModalEdit, open: openEdit, close: closeEdit } = useModal({ fadeTime: 300, title: "Edit Batch" })
   return (
-    <Table>
-      <Thead>
-        <THeadRow>
-          {header.map((item, index) => (
-            <THeadCell key={index}>{item}</THeadCell>
+    <>
+      {createPortal(
+        <>
+          <ModalDelete>
+            <DeleteModal close={closeDelete} id={item?.id} />
+          </ModalDelete>
+          <ModalEdit>
+            <ModalBox close={closeEdit} data={item} />
+          </ModalEdit>
+        </>
+        ,
+        document.body
+      )}
+      <Table>
+        <Thead>
+          <THeadRow>
+            <THeadCell >No.</THeadCell>
+            <THeadCell className=" text-center">Batch</THeadCell>
+            <THeadCell className=" text-center">Action</THeadCell>
+          </THeadRow>
+        </Thead>
+        <TBody>
+          {batchs?.map((item, index) => (
+            <TBodyRow key={index} >
+              <TBodyCell>{index + 1}</TBodyCell>
+              <TBodyCell className=" text-center">{item.start_year + " - " + item.end_year}</TBodyCell>
+              <TBodyCell className="flex gap-5 justify-center">
+                <button className='cursor-pointer' onClick={() => {
+                  openEdit()
+                  setItem(item)
+                }}>
+                  <img src={editIcon} alt="edit" />
+                </button>
+                <button className='cursor-pointer' onClick={() => {
+                  openDelete()
+                  setItem(item)
+                }}>
+                  <img src={deleteIcon} alt="edit" />
+                </button>
+              </TBodyCell>
+            </TBodyRow>
           ))}
-        </THeadRow>
-      </Thead>
-      <TBody>
-        {batchs?.map((item, index) => (
-          <TBodyRow key={index} >
-            <TBodyCell>{index + 1}</TBodyCell>
-            <TBodyCell >{item.start_year + " - " + item.end_year}</TBodyCell>
-            {/* <TBodyCell className="flex gap-2 ">
-              <button onClick={item.edit}>Edit</button>
-              <button onClick={item.delete}>Delete</button>
-            </TBodyCell> */}
-          </TBodyRow>
-        ))}
-      </TBody>
-    </Table>
+        </TBody>
+      </Table>
+    </>
   );
 };
 
-function handleSubmit(closer: () => void) {
-  return (event: React.FormEvent<HTMLFormElement>) => {
+function handleSubmit(closer: () => void, data: any) {
+  return async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const e: any = event
     const batchData = {
       start_year: e.currentTarget['start'].options[e.currentTarget['start'].selectedIndex].value as string,
       end_year: e.currentTarget['end'].options[e.currentTarget['end'].selectedIndex].value as string,
     }
+    if (data) {
+      const res = await supabase
+        .from('batch')
+        .update(batchData)
+        .eq('id', data.id)
+      if (res.status === 204)
+        closer()
+    }
+    else
+      supabase
+        .from('batch')
+        .insert(batchData)
+        .select('id')
+        .then(() => closer())
+  }
+}
+export function DeleteModal({ close, setValues = () => { }, id }: any) {
+  const { setBatch } = useAuth()
+  function handleSubmit(e: any) {
+    e.preventDefault();
     supabase
       .from('batch')
-      .insert(batchData)
-      .select('id')
-      .then(() => closer())
+      .delete()
+      .eq('id', id)
+      .then((res: any) => {
+        if (res.status === 204) {
+          getBatchFromDB().then((res) => setBatch(res as batch['Row'][]))
+          close()
+        }
+      })
   }
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="flex flex-row flex-wrap gap-4 w-[250px] justify-center mt-8">
+        <div className='flex w-full  justify-center pb-3'>
+          Do you want to delete?
+        </div>
+        <div className='flex w-full gap-3 '>
+          <Button type='submit' className='flex-1 hover:bg-red-500 hover:text-white active: '>
+            Delete
+          </Button>
+          <Button onClick={close} className='flex-1 hover:bg-green-500 hover:text-white '>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </form>
+  )
 }

@@ -2,6 +2,7 @@
 import { Pagination } from "@/components/Pagination";
 import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/buttons/default";
+import deleteIcon from '@assets/svg/deleteIcon.svg'
 
 import {
   TBody,
@@ -19,13 +20,15 @@ import { departmentType, getDepartmentsFromDB, useAuth } from "@/components/Auth
 import { supabase } from "@/utils/supbase/supabaseClient";
 import { DownloadIcon } from "@/assets/SvgTsx/download";
 import { useState } from "react";
-
+import { createPortal } from "react-dom";
+import { Helmet } from "react-helmet";
+import { convertCsvToJson } from "@/utils/convertCsvToJson";
+import { bulkImportdepartments } from "./bulkImport";
+import editIcon from '@assets/svg/editIcon.svg';
 const header = [
   "Code",
   "Department",
-  "Mission",
-  "Vision",
-  // "Action"
+
 ];
 export const Department = () => {
   const { Modal, open, close } = useModal({ fadeTime: 300, title: "Add Department" });
@@ -47,23 +50,44 @@ export const Department = () => {
 };
 const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   const { setDepartments } = useAuth()
+  const { Modal: ModalImport, open: openImport, close: closeImport } = useModal({ fadeTime: 300, title: "Import Student Data" })
 
   function reload() {
     getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
   }
   return (
-    <TopBar name="Staff">
+    <TopBar name="Department">
+      <Helmet>
+        <title>Department</title>
+        <meta name="description" content="Department List" />
+      </Helmet>
       <Button onClick={reload}>Reload</Button>
       <Button onClick={openModal}>Add Department</Button>
-      {/* <Button>Import</Button>
-      <Button className="flex gap-2">
+      <Button onClick={openImport}>Import</Button>
+      {createPortal(
+        <ModalImport>
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            const file = e.currentTarget['import'].files[0]
+            convertCsvToJson(file).then((data) => {
+              bulkImportdepartments(data)
+            })
+          }} className='flex flex-col gap-3 pt-5'>
+            <Input name='import' type="file" />
+            <Button type='submit'>Import</Button>
+          </form>
+        </ModalImport>
+        ,
+        document.body
+      )}
+      {/* <Button className="flex gap-2">
         <DownloadIcon />
         CSV
-      </Button> */}
+      </Button>  */}
     </TopBar>
   );
 };
-const ModalBox = ({ close }: { close: () => void }) => {
+const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any }) => {
   const { setDepartments } = useAuth()
 
 
@@ -72,15 +96,15 @@ const ModalBox = ({ close }: { close: () => void }) => {
     getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
   }
   return (
-    <form onSubmit={handleSubmit(closer)}>
+    <form onSubmit={handleSubmit(closer, dataReceived)}>
       <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
         <div className="flex w-full gap-3">
-          <Input placeholder="Enter name" id="name">Name</Input>
-          <Input placeholder="Enter name" id="code">Code</Input>
+          <Input placeholder="Enter name" defaultValue={dataReceived?.name} id="name">Name</Input>
+          <Input placeholder="Enter name" defaultValue={dataReceived?.code} id="code">Code</Input>
         </div>
         <div className="flex w-full gap-3">
-          <Input type="file" id="mission">Mission</Input>
-          <Input type="file" id="vision">Vision</Input>
+          <Input type="file" id="mission">{dataReceived?.mission_url ? 'Add New ' : ''}Mission</Input>
+          <Input type="file" id="vision" >{dataReceived?.vision_url ? 'Add New ' : ''}Vision</Input>
         </div>
         <div className="flex w-full gap-3 py-7">
           <Button className="flex-1 hover:bg-green-500 hover:text-white active: " type="submit">
@@ -105,42 +129,94 @@ const TableSection = () => {
     }
   }
   const { departments } = useAuth()
+  const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Department" })
+  const { Modal: ModalEdit, open: openEdit, close: closeEdit, } = useModal({ fadeTime: 300, title: "Edit Department" })
+  const [item, setItem] = useState({} as any)
   return (
-    <Table>
-      <Thead>
-        <THeadRow>
-          {header.map((item, index) => (
-            <THeadCell key={index}>{item}</THeadCell>
+    <>
+      <Table>
+        <Thead>
+          <THeadRow>
+            {header.map((item, index) => (
+              <THeadCell key={index}>{item}</THeadCell>
+            ))}
+            <THeadCell>
+              <div className="flex w-full items-center justify-center">
+                Mission
+              </div>
+            </THeadCell>
+            <THeadCell>
+              <div className="flex w-full items-center justify-center">
+                Vision
+              </div>
+            </THeadCell>
+            <THeadCell>
+              <div className="flex w-full items-center justify-center">
+                Action
+              </div>
+            </THeadCell>
+          </THeadRow>
+        </Thead>
+        <TBody>
+          {departments?.map((item) => (
+            <TBodyRow key={item?.id}>
+              <TBodyCell className="">{item?.code}</TBodyCell>
+              <TBodyCell className="">{item?.name}</TBodyCell>
+              <TBodyCell >
+                <div className="flex w-full items-center justify-center">
+
+                  {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
+                    <DownloadIcon />
+                  </div> :
+                    <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
+                  }
+                </div>
+              </TBodyCell>
+              <TBodyCell >
+                <div className="flex w-full items-center justify-center">
+
+                  {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
+                    <DownloadIcon />
+                  </div> :
+                    <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
+                  }
+                </div>
+              </TBodyCell>
+              <TBodyCell >
+                <div className="flex w-full items-center justify-center gap-5">
+                  <button className='cursor-pointer ' onClick={() => {
+                    setItem(item)
+                    openEdit()
+                  }}>
+                    <img src={editIcon} alt="edit" />
+                  </button>
+                  <button className='cursor-pointer ' onClick={() => {
+                    setItem(item)
+                    openDelete()
+                  }}>
+                    <img src={deleteIcon} alt="edit" />
+                  </button>
+
+                </div>
+              </TBodyCell>
+            </TBodyRow>
           ))}
-        </THeadRow>
-      </Thead>
-      <TBody>
-        {departments?.map((item) => (
-          <TBodyRow key={item?.id}>
-            <TBodyCell className="">{item?.code}</TBodyCell>
-            <TBodyCell className="">{item?.name}</TBodyCell>
-            <TBodyCell >
-              {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
-                <DownloadIcon />
-              </div> :
-                <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
-              }
-            </TBodyCell>
-            <TBodyCell >
-              {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
-                <DownloadIcon />
-              </div> :
-                <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
-              }
-            </TBodyCell>
-            {/* <TBodyCell className="flex gap-2 ">
-              <button onClick={item.edit}>Edit</button>
-              <button onClick={item.delete}>Delete</button>
-            </TBodyCell> */}
-          </TBodyRow>
-        ))}
-      </TBody>
-    </Table>
+        </TBody>
+      </Table>
+
+      {createPortal(
+        <>
+          <ModalEdit>
+            <ModalBox close={closeEdit} data={item} />
+          </ModalEdit>
+          <ModalDelete>
+            <DeleteModal close={closeDelete} id={item.id} />
+          </ModalDelete>
+        </>
+        ,
+        document.body
+      )}
+    </>
   );
 };
 function UploadSection({ bucketName, name, code, id }: { bucketName: string, name: string | null, code: string | null, id: number | string }) {
@@ -172,21 +248,21 @@ function UploadSection({ bucketName, name, code, id }: { bucketName: string, nam
   }
   return (
     <div className="flex items-center gap-2">
-      <Button className="cursor-pointer w-fit" onClick={handleUploadButton} >
+      <button className="cursor-pointer w-fit" onClick={handleUploadButton} >
         {file ? 'Upload' :
           <div className="rotate-180">
             <DownloadIcon />
           </div>
         }
-      </Button>
+      </button>
       {start && <Input type="file" className=" h-10"
         onChange={(e) => setFile(e.target.files?.[0])}
       />}
     </div>
   )
 }
-function handleSubmit(closer: () => void) {
-  return (event: React.FormEvent<HTMLFormElement>) => {
+function handleSubmit(closer: () => void, data: any) {
+  return async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const e: any = event
     const departmentData = {
@@ -210,14 +286,26 @@ function handleSubmit(closer: () => void) {
       departmentData.vision_url = vision.path
       promises.push(visionUpload)
     }
-
-    Promise.all(promises).then(() => {
-      supabase
-        .from('departments')
-        .insert(departmentData)
-        .select('id')
-        .then(() => closer())
-    })
+    if (data) {
+      const currData = {
+        name: departmentData?.name,
+        code: departmentData?.code,
+        mission_url: departmentData?.mission_url ?? null,
+        vision_url: departmentData?.vision_url ?? null
+      }
+      const res = await supabase.from('departments').update(currData).eq('id', data.id)
+      if (res.status === 204) {
+        closer()
+      }
+    } else {
+      Promise.all(promises).then(() => {
+        supabase
+          .from('departments')
+          .insert(departmentData)
+          .select('id')
+          .then(() => closer())
+      })
+    }
   }
 }
 export function getFilePath(file: File | undefined, name: string) {
@@ -266,4 +354,37 @@ function handleDownload(bucketName: string, path: string | null) {
       }
     })
   }
+}
+export function DeleteModal({ close, setValues = () => { }, id }: any) {
+  const { setDepartments } = useAuth()
+  function handleSubmit(e: any) {
+    e.preventDefault();
+    supabase
+      .from('departments')
+      .delete()
+      .eq('id', id)
+      .then((res: any) => {
+        if (res.status === 204) {
+          getDepartmentsFromDB().then((res) => setDepartments(res as departmentType[]))
+          close()
+        }
+      })
+  }
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="flex flex-row flex-wrap gap-4 w-[250px] justify-center mt-8">
+        <div className='flex w-full  justify-center pb-3'>
+          Do you want to delete?
+        </div>
+        <div className='flex w-full gap-3 '>
+          <Button type='submit' className='flex-1 hover:bg-red-500 hover:text-white active: '>
+            Delete
+          </Button>
+          <Button onClick={close} className='flex-1 hover:bg-green-500 hover:text-white '>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </form>
+  )
 }

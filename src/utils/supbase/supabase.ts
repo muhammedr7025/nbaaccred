@@ -5,6 +5,186 @@ export type Json =
   | null
   | { [key: string]: Json | undefined }
   | Json[]
+export type staff = {
+  Row: {
+    created_at: string
+    dept_id: number | null
+    is_advisor: boolean | null
+    user_id: string
+  }
+  Insert: {
+    created_at?: string
+    dept_id?: number | null
+    is_advisor?: boolean | null
+    user_id: string
+  }
+  Update: {
+    created_at?: string
+    dept_id?: number | null
+    is_advisor?: boolean | null
+    user_id?: string
+  }
+  Relationships: [
+    {
+      foreignKeyName: "public_staff_dept_id_fkey"
+      columns: ["dept_id"]
+      isOneToOne: false
+      referencedRelation: "departments"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "public_staff_user_id_fkey"
+      columns: ["user_id"]
+      isOneToOne: true
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    }
+  ]
+}
+export type user_role = {
+  Row: {
+    created_at: string
+    id: number
+    name: string
+  }
+  Insert: {
+    created_at?: string
+    id?: number
+    name: string
+  }
+  Update: {
+    created_at?: string
+    id?: number
+    name?: string
+  }
+  Relationships: []
+}
+export type user = {
+  Row: {
+    email: string | null
+    id: string
+    name: string | null
+    phone: string | null
+    role_id: number | null
+    role_name: string | null
+    update_at: string | null
+    username: string | null
+  }
+  Insert: {
+    email?: string | null
+    id: string
+    name?: string | null
+    phone?: string | null
+    role_id?: number | null
+    role_name?: string | null
+    update_at?: string | null
+    username?: string | null
+  }
+  Update: {
+    email?: string | null
+    id?: string
+    name?: string | null
+    phone?: string | null
+    role_id?: number | null
+    role_name?: string | null
+    update_at?: string | null
+    username?: string | null
+  }
+  Relationships: [
+    {
+      foreignKeyName: "public_users_role_fkey"
+      columns: ["role_id"]
+      isOneToOne: false
+      referencedRelation: "user_roles"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "public_users_role_name_fkey"
+      columns: ["role_name"]
+      isOneToOne: false
+      referencedRelation: "user_roles"
+      referencedColumns: ["name"]
+    },
+    {
+      foreignKeyName: "users_id_fkey"
+      columns: ["id"]
+      isOneToOne: true
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    }
+  ]
+}
+export type student = {
+  Row: {
+    adm_no: string | null
+    batch_id: number | null
+    chemistry: number | null
+    created_at: string
+    dept_id: number | null
+    gender: string | null
+    id: number
+    keam: number | null
+    maths: number | null
+    physics: number | null
+    pre_degree: number | null
+    proof_url: string | null
+    rank: number | null
+    reg_no: string | null
+    remarks: string | null
+    updated_at: string | null
+  }
+  Insert: {
+    adm_no?: string | null
+    batch_id?: number | null
+    chemistry?: number | null
+    created_at?: string
+    dept_id?: number | null
+    id?: number
+    keam?: number | null
+    maths?: number | null
+    physics?: number | null
+    pre_degree?: number | null
+    proof_url?: string | null
+    rank?: number | null
+    reg_no?: string | null
+    remarks?: string | null
+    updated_at?: string | null
+  }
+  Update: {
+    adm_no?: string | null
+    batch_id?: number | null
+    chemistry?: number | null
+    created_at?: string
+    dept_id?: number | null
+    gender?: string | null
+    id?: number
+    keam?: number | null
+    maths?: number | null
+    physics?: number | null
+    pre_degree?: number | null
+    proof_url?: string | null
+    rank?: number | null
+    reg_no?: string | null
+    remarks?: string | null
+    updated_at?: string | null
+  }
+  Relationships: [
+    {
+      foreignKeyName: "public_students_batch_id_fkey"
+      columns: ["batch_id"]
+      isOneToOne: false
+      referencedRelation: "batch"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "public_students_dept_id_fkey"
+      columns: ["dept_id"]
+      isOneToOne: false
+      referencedRelation: "departments"
+      referencedColumns: ["id"]
+    }
+  ]
+}
 export type batch = {
   Row: {
     created_at: string
@@ -84,220 +264,10 @@ export type Database = {
       }
       batch: batch
       departments: department
-      hod: {
-        Row: {
-          created_at: string
-          dept_id: number
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          dept_id: number
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          dept_id?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "public_hod_dept_id_fkey"
-            columns: ["dept_id"]
-            isOneToOne: true
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "public_hod_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      staff: {
-        Row: {
-          created_at: string
-          dept_id: number | null
-          is_advisor: boolean | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          dept_id?: number | null
-          is_advisor?: boolean | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          dept_id?: number | null
-          is_advisor?: boolean | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "public_staff_dept_id_fkey"
-            columns: ["dept_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "public_staff_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      students: {
-        Row: {
-          adm_no: string | null
-          batch_id: number | null
-          chemistry: number | null
-          created_at: string
-          dept_id: number | null
-          gender: string | null
-          id: number
-          keam: number | null
-          maths: number | null
-          physics: number | null
-          pre_degree: number | null
-          proof_url: string | null
-          rank: number | null
-          reg_no: string | null
-          remarks: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          adm_no?: string | null
-          batch_id?: number | null
-          chemistry?: number | null
-          created_at?: string
-          dept_id?: number | null
-          gender?: string | null
-          id?: number
-          keam?: number | null
-          maths?: number | null
-          physics?: number | null
-          pre_degree?: number | null
-          proof_url?: string | null
-          rank?: number | null
-          reg_no?: string | null
-          remarks?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          adm_no?: string | null
-          batch_id?: number | null
-          chemistry?: number | null
-          created_at?: string
-          dept_id?: number | null
-          gender?: string | null
-          id?: number
-          keam?: number | null
-          maths?: number | null
-          physics?: number | null
-          pre_degree?: number | null
-          proof_url?: string | null
-          rank?: number | null
-          reg_no?: string | null
-          remarks?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "public_students_batch_id_fkey"
-            columns: ["batch_id"]
-            isOneToOne: false
-            referencedRelation: "batch"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "public_students_dept_id_fkey"
-            columns: ["dept_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: number
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          name: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      users: {
-        Row: {
-          email: string | null
-          id: string
-          name: string | null
-          phone: string | null
-          role_id: number | null
-          role_name: string | null
-          update_at: string | null
-          username: string | null
-        }
-        Insert: {
-          email?: string | null
-          id: string
-          name?: string | null
-          phone?: string | null
-          role_id?: number | null
-          role_name?: string | null
-          update_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          email?: string | null
-          id?: string
-          name?: string | null
-          phone?: string | null
-          role_id?: number | null
-          role_name?: string | null
-          update_at?: string | null
-          username?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "public_users_role_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "user_roles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "public_users_role_name_fkey"
-            columns: ["role_name"]
-            isOneToOne: false
-            referencedRelation: "user_roles"
-            referencedColumns: ["name"]
-          },
-          {
-            foreignKeyName: "users_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+      staff: staff,
+      students: student,
+      user_roles: user_role,
+      users: user
     }
     Views: {
       [_ in never]: never
