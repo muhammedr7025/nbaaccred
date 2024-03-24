@@ -15,6 +15,7 @@ import deleteIcon from '@assets/svg/deleteIcon.svg'
 import { Helmet } from 'react-helmet'
 import { convertCsvToJson } from '@/utils/convertCsvToJson'
 import { bulkImportStaff } from './bulkImport'
+import editIcon from '@assets/svg/editIcon.svg'
 
 const header: staffHeaderType[] = ["Name", "Mobile", "Email", "Advisor", "Department",
     "Batch",
@@ -89,8 +90,8 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
         </TopBar>
     )
 }
-const ModalBox = ({ close }: { close: () => void }) => {
-    const [isAdvisor, setIsAdvisor] = React.useState(false)
+const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any }) => {
+    const [isAdvisor, setIsAdvisor] = React.useState(dataReceived?.is_advisor ?? false)
     const { departments, genders, roles, staff, batchs } = useAuth()
     function closer() {
         close()
@@ -103,25 +104,25 @@ const ModalBox = ({ close }: { close: () => void }) => {
         setIsAdvisor(e.target.value.toLowerCase() === "yes")
     }
     return (
-        <form onSubmit={handleSubmit(roles, closer)}>
+        <form onSubmit={handleSubmit(roles, closer, dataReceived)}>
             <div className="flex flex-row flex-wrap gap-4 w-[500px] justify-center mt-8">
                 <div className='flex w-full gap-3'>
-                    <Input id='name' placeholder='Enter name' required>Name</Input>
-                    <Input id='email' placeholder='Enter email' required>Email</Input>
+                    <Input id='name' placeholder='Enter name' required defaultValue={dataReceived?.name}>Name</Input>
+                    <Input id='email' placeholder='Enter email' required defaultValue={dataReceived?.email}>Email</Input>
                 </div>
                 <div className='flex w-full gap-3'>
-                    <Input id='mobile' placeholder='Enter mobile' required>Mobile</Input>
-                    <Select id='gender' header='Gender' >
-                        {genders?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
+                    <Input id='mobile' placeholder='Enter mobile' required defaultValue={dataReceived?.phone}>Mobile</Input>
+                    <Select id='gender' header='Gender' defaultValue={dataReceived?.gender}>
+                        {genders?.map((item) => <Option id={`${item?.id}`} value={item?.name} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
 
                     </Select>
                 </div>
                 <div className='flex w-full gap-3'>
-                    <Select id='department' header='Department' required >
-                        {departments?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{item?.name}</Option>)}
+                    <Select id='department' header='Department' required defaultValue={dataReceived?.department}>
+                        {departments?.map((item) => <Option id={`${item?.id}`} value={item?.name as string} key={item?.id} >{item?.name}</Option>)}
                     </Select>
 
-                    <Select id='advisor' header='Is Advisor' onChange={handleIsAdvisor} defaultValue={'no'}>
+                    <Select id='advisor' header='Is Advisor' onChange={handleIsAdvisor} defaultValue={dataReceived?.is_advisor ? 'yes' : 'no'}>
                         <Option value='yes' >Yes</Option>
                         <Option value='no'>No</Option>
                     </Select>
@@ -145,43 +146,65 @@ const ModalBox = ({ close }: { close: () => void }) => {
     )
 }
 const TableSection = ({ staff, }: any) => {
-    const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete S" })
+    const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Staff" })
+    const { Modal: ModalEdit, open: openEdit, close: closeEdit } = useModal({ fadeTime: 300, title: "Edit Staff " })
 
+    const [item, setItem] = React.useState({} as any)
     return (
-        <Table>
-            <Thead>
-                <THeadRow>
-                    {header.map((item, index) => <THeadCell key={index}>{item}</THeadCell>)}
-                </THeadRow>
-            </Thead>
-            <TBody>
-                {staff?.map((item: any) => {
-                    if (item)
-                        return (
-                            <TBodyRow key={item?.id}>
-                                <TBodyCell className='font-semibold'>{item.name}</TBodyCell>
-                                <TBodyCell>{item.phone}</TBodyCell>
-                                <TBodyCell>{item.email}</TBodyCell>
-                                <TBodyCell>{item.is_advisor ? "Yes" : "No"}</TBodyCell>
-                                <TBodyCell>{item.dept}</TBodyCell>
-                                <TBodyCell>{item?.batch}</TBodyCell>
-                                <TBodyCell className='flex gap-2 justify-center items-center'>
-                                    <button className='cursor-pointer' onClick={openDelete}>
-                                        <img src={deleteIcon} alt="edit" />
-                                    </button>
-                                    {createPortal(
-                                        <ModalDelete>
-                                            <DeleteStaffModal close={closeDelete} id={item.id} />
-                                        </ModalDelete>,
-                                        document.body
-                                    )}
-                                </TBodyCell>
-                            </TBodyRow>
-                        )
-                    else <div></div>
-                })}
-            </TBody>
-        </Table>
+        <>
+            {createPortal(
+                <>
+                    <ModalDelete>
+                        <DeleteStaffModal close={closeDelete} id={item.id} />
+                    </ModalDelete>
+                    <ModalEdit>
+                        <ModalBox close={closeEdit} data={item} />
+                    </ModalEdit>
+                </>
+                ,
+                document.body
+            )}
+
+            <Table>
+
+                <Thead>
+                    <THeadRow>
+                        {header.map((item, index) => <THeadCell key={index}>{item}</THeadCell>)}
+                    </THeadRow>
+                </Thead>
+                <TBody>
+                    {staff?.map((item: any) => {
+                        if (item)
+                            return (
+                                <TBodyRow key={item?.id}>
+                                    <TBodyCell className='font-semibold'>{item.name}</TBodyCell>
+                                    <TBodyCell>{item.phone}</TBodyCell>
+                                    <TBodyCell>{item.email}</TBodyCell>
+                                    <TBodyCell>{item.is_advisor ? "Yes" : "No"}</TBodyCell>
+                                    <TBodyCell>{item.dept}</TBodyCell>
+                                    <TBodyCell>{item?.batch}</TBodyCell>
+                                    <TBodyCell className='flex gap-5 justify-center items-center'>
+
+                                        <button className='cursor-pointer' onClick={() => {
+                                            openEdit()
+                                            setItem(item)
+                                        }}>
+                                            <img src={editIcon} alt="edit" />
+                                        </button>
+                                        <button className='cursor-pointer' onClick={() => {
+                                            openDelete()
+                                            setItem(item)
+                                        }}>
+                                            <img src={deleteIcon} alt="edit" />
+                                        </button>
+                                    </TBodyCell>
+                                </TBodyRow>
+                            )
+                        else <div></div>
+                    })}
+                </TBody>
+            </Table>
+        </>
     )
 }
 
@@ -216,8 +239,8 @@ async function getStaffFromDB() {
             return data
         })
 }
-function handleSubmit(roles: any, closer: () => void) {
-    return (event: React.FormEvent<HTMLFormElement>) => {
+function handleSubmit(roles: any, closer: () => void, dataReceived?: any) {
+    return async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const e: any = event
         const userData = {
@@ -233,11 +256,24 @@ function handleSubmit(roles: any, closer: () => void) {
             batch_id: e.currentTarget['batch']?.options[e.currentTarget['batch'].selectedIndex].id as string
         }
         console.log(userData)
-        supabase
-            .from('users')
-            .insert(userData)
-            .select('id')
-            .then(addStaff(data, closer))
+        if (dataReceived) {
+            console.log(dataReceived)
+            const staffDataR = staffData(dataReceived?.user_id, data)
+            const res = await supabase
+                .from('users')
+                .update(userData)
+                .eq('id', dataReceived?.id)
+            const resStaff = await supabase.from('staff').update(staffData(dataReceived?.id, data)).eq('user_id', dataReceived?.id)
+
+            if (resStaff.status === 204 || res.status === 204)
+                closer()
+
+        } else
+            supabase
+                .from('users')
+                .insert(userData)
+                .select('id')
+                .then(addStaff(data, closer))
     }
 }
 function addStaff(data: any, closer: () => void) {
@@ -263,10 +299,19 @@ function addIfAdvisor(is_advisor: boolean, userId: string, closer: () => void) {
     }
 }
 function staffData(userId: string, data: any) {
-    return ({
-        ...data,
-        user_id: userId
-    })
+    const { dept_id, is_advisor, batch_id } = data
+    if (is_advisor)
+        return ({
+            ...data,
+            user_id: userId
+        })
+    else
+        return ({
+            user_id: userId,
+            dept_id: dept_id,
+            is_advisor: is_advisor,
+            batch_id: null
+        })
 }
 
 export function DeleteStaffModal({ close, setValues = () => { }, id }: any) {
