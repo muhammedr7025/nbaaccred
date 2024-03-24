@@ -55,10 +55,10 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   const { setBatch } = useAuth()
   return (
     <TopBar name="Staff">
-      <Helmet>
+      {/* <Helmet>
         <title>Batch</title>
         <meta name="description" content="Batch List" />
-      </Helmet>
+      </Helmet> */}
       <Button onClick={() => {
         getBatchFromDB().then(res => setBatch(res as batch['Row'][]))
       }}>Reload</Button>
