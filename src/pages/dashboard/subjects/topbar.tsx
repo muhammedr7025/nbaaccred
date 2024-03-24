@@ -10,7 +10,7 @@ function TopBarSection() {
     const { Modal: AddModal, open: openAdd, close: closeAdder } = useModal({ fadeTime: 300, title: "Add Subject" })
     const { Subjects } = useAuth()
     return (
-        <TopBar name='Staff'>
+        <TopBar name='Subject'>
             <Button onClick={Subjects.reload}>Reload</Button>
             <Button onClick={openAdd}>Add Subject</Button>
             {

@@ -3,7 +3,7 @@ import { Button } from '@/components/buttons/default'
 import { useModal } from '@/components/modal'
 import { TBody, TBodyCell, TBodyRow, THeadCell, THeadRow, Table, Thead } from '@/components/table/table'
 import React, { useEffect } from 'react'
-import { AddForm } from './form'
+import { AddForm, DeleteForm } from './form'
 import { createPortal } from 'react-dom'
 import { SubjectType } from '@/types/tables'
 import { DownloadIcon } from '@/assets/SvgTsx/download'
@@ -18,6 +18,14 @@ export const SubjectTable = () => {
     useEffect(() => {
         Subjects.fetch()
     }, [])
+    function handleEdit(data: SubjectType) {
+        openEditor()
+        setData(data)
+    }
+    function handleDelete(data: SubjectType) {
+        openDeleter()
+        setData(data)
+    }
     return (
         <>
             {
@@ -27,6 +35,7 @@ export const SubjectTable = () => {
                             <AddForm close={closeEditor} data={data} />
                         </EditFormModal>
                         <DeleteFormModal>
+                            <DeleteForm close={closeDeleter} data={data} />
                         </DeleteFormModal>
                     </>,
 
@@ -53,16 +62,11 @@ export const SubjectTable = () => {
                                 <PdfDownloadButton item={item} />
                             </TBodyCell>
                             <TBodyCell className=" text-center">
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 justify-center items-center">
                                     <Button
-                                        onClick={() => {
-                                            openEditor()
-                                            setData(item)
-                                        }}>Edit</Button>
+                                        onClick={() => { handleEdit(item) }}>Edit</Button>
                                     <Button
-                                        onClick={() => {
-                                            Subjects.delete(item.id)
-                                        }}>Delete</Button>
+                                        onClick={() => { handleDelete(item) }}>Delete</Button>
                                 </div>
                             </TBodyCell>
                         </TBodyRow>

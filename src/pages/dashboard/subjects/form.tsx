@@ -30,13 +30,19 @@ export const AddForm = ({ data: dataReceived, close }: any) => {
         </form>
     )
 }
-export function DeleteForm(data: SubjectType) {
+export function DeleteForm({ data, close }: { data: SubjectType, close: () => void }) {
     const { Subjects } = useAuth()
+    function handleDelete(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        Subjects.delete(data.id)
+        close()
+    }
     return (
-        <form onSubmit={ }>
+        <form onSubmit={handleDelete}>
             <div className="flex flex-row flex-wrap gap-4 w-[250px] justify-center mt-8">
-                <div className='flex w-full  justify-center pb-3'>
+                <div className='flex flex-col w-full justify-center pb-3 text-center gap-4'>
                     Do you want to delete?
+                    <span className=' font-medium text-center' >{data?.name} - {data?.code}</span>
                 </div>
                 <div className='flex w-full gap-3 '>
                     <Button type='submit' className='flex-1 hover:bg-red-500 hover:text-white active: '>
