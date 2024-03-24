@@ -129,74 +129,81 @@ const TableSection = () => {
     }
   }
   const { departments } = useAuth()
-  const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete S" })
-
+  const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Department" })
+  const [item, setItem] = useState({} as any)
   return (
-    <Table>
-      <Thead>
-        <THeadRow>
-          {header.map((item, index) => (
-            <THeadCell key={index}>{item}</THeadCell>
+    <>
+      <Table>
+        <Thead>
+          <THeadRow>
+            {header.map((item, index) => (
+              <THeadCell key={index}>{item}</THeadCell>
+            ))}
+            <THeadCell>
+              <div className="flex w-full items-center justify-center">
+                Mission
+              </div>
+            </THeadCell>
+            <THeadCell>
+              <div className="flex w-full items-center justify-center">
+                Vision
+              </div>
+            </THeadCell>
+            <THeadCell>
+              <div className="flex w-full items-center justify-center">
+                Action
+              </div>
+            </THeadCell>
+          </THeadRow>
+        </Thead>
+        <TBody>
+          {departments?.map((item) => (
+            <TBodyRow key={item?.id}>
+              <TBodyCell className="">{item?.code}</TBodyCell>
+              <TBodyCell className="">{item?.name}</TBodyCell>
+              <TBodyCell >
+                <div className="flex w-full items-center justify-center">
+
+                  {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
+                    <DownloadIcon />
+                  </div> :
+                    <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
+                  }
+                </div>
+              </TBodyCell>
+              <TBodyCell >
+                <div className="flex w-full items-center justify-center">
+
+                  {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
+                    <DownloadIcon />
+                  </div> :
+                    <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
+                  }
+                </div>
+              </TBodyCell>
+              <TBodyCell >
+                <div className="flex w-full items-center justify-center">
+                  <button className='cursor-pointer ' onClick={() => {
+                    setItem(item)
+                    openDelete()
+                  }}>
+                    <img src={deleteIcon} alt="edit" />
+                  </button>
+                </div>
+
+              </TBodyCell>
+            </TBodyRow>
           ))}
-          <THeadCell>
-            <div className="flex w-full items-center justify-center">
-              Mission
-            </div>
-          </THeadCell>
-          <THeadCell>
-            <div className="flex w-full items-center justify-center">
-              Vision
-            </div>
-          </THeadCell>
-          <THeadCell>
-            <div className="flex w-full items-center justify-center">
-              Action
-            </div>
-          </THeadCell>
-        </THeadRow>
-      </Thead>
-      <TBody>
-        {departments?.map((item) => (
-          <TBodyRow key={item?.id}>
-            <TBodyCell className="">{item?.code}</TBodyCell>
-            <TBodyCell className="">{item?.name}</TBodyCell>
-            <TBodyCell >
-              <div className="flex w-full items-center justify-center">
+        </TBody>
+      </Table>
 
-                {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
-                  <DownloadIcon />
-                </div> :
-                  <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
-                }
-              </div>
-            </TBodyCell>
-            <TBodyCell >
-              <div className="flex w-full items-center justify-center">
-
-                {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
-                  <DownloadIcon />
-                </div> :
-                  <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
-                }
-              </div>
-            </TBodyCell>
-            <TBodyCell >
-              <div className="flex w-full items-center justify-center">
-                <button className='cursor-pointer ' onClick={openDelete}>
-                  <img src={deleteIcon} alt="edit" />
-                </button>
-              </div>
-              {createPortal(
-                <ModalDelete>
-                  <DeleteModal close={closeDelete} id={item.id} />
-                </ModalDelete>,
-                document.body
-              )}
-            </TBodyCell>
-          </TBodyRow>
-        ))}
-      </TBody>
-    </Table>
+      {createPortal(
+        <ModalDelete>
+          <DeleteModal close={closeDelete} id={item.id} />
+        </ModalDelete>,
+        document.body
+      )}
+    </>
   );
 };
 function UploadSection({ bucketName, name, code, id }: { bucketName: string, name: string | null, code: string | null, id: number | string }) {

@@ -23,6 +23,7 @@ import { Option, Select } from "@/components/select/select";
 import { createPortal } from "react-dom";
 import { batchType } from "@/types/tables";
 import { Helmet } from "react-helmet";
+import { useState } from "react";
 
 const header = [
   "No.",
@@ -105,36 +106,41 @@ const ModalBox = ({ close }: any) => {
 const TableSection = () => {
   const { batchs } = useAuth()
   const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete S" })
-
+  const [item, setItem] = useState({} as any)
   return (
-    <Table>
-      <Thead>
-        <THeadRow>
-          <THeadCell >No.</THeadCell>
-          <THeadCell className=" text-center">Batch</THeadCell>
-          <THeadCell className=" text-center">Action</THeadCell>
-        </THeadRow>
-      </Thead>
-      <TBody>
-        {batchs?.map((item, index) => (
-          <TBodyRow key={index} >
-            <TBodyCell>{index + 1}</TBodyCell>
-            <TBodyCell className=" text-center">{item.start_year + " - " + item.end_year}</TBodyCell>
-            <TBodyCell className="flex gap-2 justify-center">
-              <button className='cursor-pointer' onClick={openDelete}>
-                <img src={deleteIcon} alt="edit" />
-              </button>
-              {createPortal(
-                <ModalDelete>
-                  <DeleteModal close={closeDelete} id={item.id} />
-                </ModalDelete>,
-                document.body
-              )}
-            </TBodyCell>
-          </TBodyRow>
-        ))}
-      </TBody>
-    </Table>
+    <>
+      {createPortal(
+        <ModalDelete>
+          <DeleteModal close={closeDelete} id={item?.id} />
+        </ModalDelete>,
+        document.body
+      )}
+      <Table>
+        <Thead>
+          <THeadRow>
+            <THeadCell >No.</THeadCell>
+            <THeadCell className=" text-center">Batch</THeadCell>
+            <THeadCell className=" text-center">Action</THeadCell>
+          </THeadRow>
+        </Thead>
+        <TBody>
+          {batchs?.map((item, index) => (
+            <TBodyRow key={index} >
+              <TBodyCell>{index + 1}</TBodyCell>
+              <TBodyCell className=" text-center">{item.start_year + " - " + item.end_year}</TBodyCell>
+              <TBodyCell className="flex gap-2 justify-center">
+                <button className='cursor-pointer' onClick={() => {
+                  openDelete()
+                  setItem(item)
+                }}>
+                  <img src={deleteIcon} alt="edit" />
+                </button>
+              </TBodyCell>
+            </TBodyRow>
+          ))}
+        </TBody>
+      </Table>
+    </>
   );
 };
 
