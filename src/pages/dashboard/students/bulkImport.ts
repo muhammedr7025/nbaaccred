@@ -1,5 +1,3 @@
-import { getDepartments } from "@/components/AuthContext";
-import { student } from "@/utils/supbase/supabase";
 import { supabase } from "@/utils/supbase/supabaseClient";
 
 export async function bulkImportStudent(data: any) {
@@ -20,7 +18,6 @@ export async function bulkImportStudent(data: any) {
         if (newData?.data) {
             const studentData = newData.data.map(async (item: any) => {
                 const filteredData = data.find((dataItem: any) => dataItem.email === item.email)
-                console.log(filteredData)
                 if (filteredData) {
                     return {
                         adm_no: filteredData.adm_no,
@@ -39,7 +36,6 @@ export async function bulkImportStudent(data: any) {
             })
             const studentDataList = await Promise.all(studentData)
             const newStudentData = await supabase.from('students').upsert(studentDataList, { ignoreDuplicates: true, onConflict: 'user_id,rank' }).select('')
-            console.log(newStudentData)
         }
     } catch (error) {
         console.log(error)
