@@ -25,3 +25,9 @@ export type SubjectType = {
     name?: string | null
     syllabus_url?: string | null
 }
+
+export type CalenderType = {
+    id?: number | string | null
+    name?: string | null
+    calender_url?: string | null
+}
