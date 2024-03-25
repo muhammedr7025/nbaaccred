@@ -13,7 +13,12 @@ export type studentType = {
 
 }
 
-export type batchType = {}
+export type BatchType = {
+    id?: number
+    end_year?: string
+    start_year?: string
+    created_at?: string
+}
 
 export type departmentType = {}
 
