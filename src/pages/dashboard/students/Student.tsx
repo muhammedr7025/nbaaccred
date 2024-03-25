@@ -50,10 +50,6 @@ export const Student = () => {
     const [item, setItem] = React.useState<any>(null)
     return (
         <>
-            <Helmet>
-                <title>Student</title>
-                <meta name="description" content="Student List" />
-            </Helmet>
             <ModalEdit>
                 <ModalBox close={closeEdit} setStudent={setStudent} data={item} />
             </ModalEdit>

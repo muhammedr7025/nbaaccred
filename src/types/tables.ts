@@ -16,3 +16,12 @@ export type studentType = {
 export type batchType = {}
 
 export type departmentType = {}
+
+
+export type SubjectType = {
+    code?: string | null
+    created_at?: string
+    id?: number | string | null
+    name?: string | null
+    syllabus_url?: string | null
+}

@@ -35,10 +35,10 @@ export const Staff = () => {
     }
     return (
         <>
-            <Helmet>
+            {/* <Helmet>
                 <title>Staff</title>
                 <meta name="description" content="Staff List" />
-            </Helmet>
+            </Helmet> */}
             <BoxLayout
                 topBar={
                     <TopBarSection openModal={open} />

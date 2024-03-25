@@ -57,10 +57,10 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
   }
   return (
     <TopBar name="Department">
-      <Helmet>
+      {/* <Helmet>
         <title>Department</title>
         <meta name="description" content="Department List" />
-      </Helmet>
+      </Helmet> */}
       <Button onClick={reload}>Reload</Button>
       <Button onClick={openModal}>Add Department</Button>
       <Button onClick={openImport}>Import</Button>

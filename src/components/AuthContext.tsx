@@ -1,3 +1,4 @@
+import useSubjects, { subjectHookType } from "@/hooks/useSubjects";
 import { getStaff } from "@/pages/dashboard/staff";
 import { batch, department } from "@/utils/supbase/supabase";
 import { supabase } from "@/utils/supbase/supabaseClient";
@@ -11,6 +12,7 @@ type auth = {
 export type departmentType = department['Row']
 type IAuthContext = {
     isLoading: boolean
+
     session: Session | null
     handleSignIn: (email: string, password: string) => void
     handleSignUp: ({ }: auth) => Promise<AuthResponse | any>
@@ -31,9 +33,11 @@ type IAuthContext = {
     },
     setDepartments: React.Dispatch<React.SetStateAction<departmentType[]>>,
     setBatch: React.Dispatch<React.SetStateAction<batch['Row'][]>>
+    Subjects: subjectHookType
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const Subjects = useSubjects()
     const [isLoading, setLoading] = useState(true)
     const [session, setSession] = useState<Session | null>(null)
     const [batchs, setBatch] = useState<batch['Row'][]>([])
@@ -100,6 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     return (
         <AuthContext.Provider value={{
+            Subjects,
             isLoading,
             handleSignIn, handleSignUp, signOut,
             session,
