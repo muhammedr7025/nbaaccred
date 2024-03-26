@@ -13,7 +13,12 @@ export type studentType = {
 
 }
 
-export type batchType = {}
+export type BatchType = {
+    id?: number
+    end_year?: string
+    start_year?: string
+    created_at?: string
+}
 
 export type departmentType = {}
 
@@ -24,4 +29,10 @@ export type SubjectType = {
     id?: number | string | null
     name?: string | null
     syllabus_url?: string | null
+}
+
+export type CalenderType = {
+    id?: number | string | null
+    name?: string | null
+    calender_url?: string | null
 }

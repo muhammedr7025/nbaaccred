@@ -1,7 +1,6 @@
 import { SubjectType } from '@/types/tables'
 import { supabase } from '@/utils/supbase/supabaseClient'
-import { error } from 'console'
-import React, { useEffect } from 'react'
+import React from 'react'
 export type subjectHookType = ReturnType<typeof useSubjects>
 const useSubjects = () => {
     const [subjects, setSubjects] = React.useState<SubjectType[]>([])
@@ -30,13 +29,19 @@ const useSubjects = () => {
     function upload(file: File | null | undefined, data: SubjectType) {
         return uploadSubjectPDF(file, data)
     }
+    function updateUpload(file: File | null | undefined, data: SubjectType) {
+        return updateSubjectPDF(file, data)
+    }
     function download(path: string | undefined | null) {
         if (!path) throw new Error('Path is required')
         return downloadImage(path)
     }
     return {
-        data: subjects, set: setSubjects, delete: deleter,
-        reload, fetch, add, update, addBulk, upload, download
+        data: subjects,
+        set: setSubjects,
+        delete: deleter,
+        reload, fetch, add, update, addBulk, upload, download,
+        updatePdf: updateUpload
     }
 }
 
@@ -92,13 +97,29 @@ async function bulkAddSubjects(subjects: SubjectType[]) {
 }
 
 async function uploadSubjectPDF(file: File | null | undefined, data: SubjectType) {
+    console.log('uploading subject pdf')
     if (!file || !data.code) return null
     const fileExt = file.name.split('.').pop()
     const path = `${data.code}.${fileExt}`
     const res = await supabase.storage.from('subjects').upload(path, file)
     if (res.data?.path) return res.data?.path
+    else if (res.error) throw res.error
     else return null
 }
+
+async function updateSubjectPDF(file: File | null | undefined, data: SubjectType) {
+    console.log('updating subject pdf')
+    if (!file || !data.code) return null
+    const fileExt = file.name.split('.').pop()
+    const path = `${data.code}.${fileExt}`
+    const deleteRes = await supabase.storage.from('subjects').remove([path])
+    if (deleteRes.error) throw deleteRes.error
+    const res = await supabase.storage.from('subjects').upload(path, file,)
+    if (res.data?.path) return res.data?.path
+    else if (res.error) throw res.error
+    else return null
+}
+
 async function downloadImage(path: string) {
     const res = await supabase.storage.from('subjects').download(path)
     console.log(res)

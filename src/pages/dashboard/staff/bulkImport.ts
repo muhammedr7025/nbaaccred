@@ -28,7 +28,8 @@ export async function bulkImportStaff(data: any) {
                 }
             })
             const staffDataList = await Promise.all(staffData)
-            const newStaffData = await supabase.from('staff').upsert(staffDataList, { ignoreDuplicates: true, onConflict: 'user_id' }).select('user_id')
+            supabase.from('staff').upsert(staffDataList, { ignoreDuplicates: true, onConflict: 'user_id' }).select('user_id')
+                .then(res => console.log(res))
         }
     } catch (error) {
         console.log(error)
