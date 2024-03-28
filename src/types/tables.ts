@@ -12,6 +12,17 @@ export type staffType = {
 export type studentType = {
 
 }
+export type UserType = {
+    id: string
+    updated_at?: string
+    name: string
+    email: string
+    phone: string
+    role_id: string
+    gender: string
+    auth_user_id: string
+    is_auth: boolean
+}
 export type UserRoleType = {
     created_at?: string
     id?: number

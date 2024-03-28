@@ -1,12 +1,14 @@
 import useBatch, { batchHookType } from "@/hooks/useBatch";
 import useCalenders, { calenderHookType } from "@/hooks/useCalender";
 import useDepartments, { departmentHookType } from "@/hooks/useDepartment";
+import { privilegeHookType, useRolePrivileges } from "@/hooks/useRolePrivileges";
 import { roleHookType, useRoles } from "@/hooks/useRoles";
 import useSubjects, { subjectHookType } from "@/hooks/useSubjects";
+import { UserHookType, useUser } from "@/hooks/useUser";
 import { getStaff } from "@/pages/dashboard/staff";
 import { batch, department } from "@/utils/supbase/supabase";
 import { supabase } from "@/utils/supbase/supabaseClient";
-import { AuthResponse, Session } from "@supabase/supabase-js";
+import { AuthResponse, Session, User as SupabaseUser } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type auth = {
@@ -42,6 +44,7 @@ type IAuthContext = {
     Batch: batchHookType
     Departments: departmentHookType
     Roles: roleHookType
+    User: UserHookType
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -52,6 +55,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const Roles = useRoles()
     const [isLoading, setLoading] = useState(true)
     const [session, setSession] = useState<Session | null>(null)
+    const [authUser, setAuthUser] = useState<SupabaseUser>()
+    const User = useUser(authUser?.id)
     const [batchs, setBatch] = useState<batch['Row'][]>([])
     const [departments, setDepartments] = useState<any[]>([])
     const [genders, setGenders] = useState<any>([])
@@ -62,7 +67,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         set: setStaff
     }
     useEffect(() => {
-        if (session) {
+        if (session && !authUser) {
+            setAuthUser(session.user)
             setLoading(false)
             Batch.fetch()
             Departments.fetch()
@@ -116,7 +122,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     return (
         <AuthContext.Provider value={{
-            Subjects, Calenders, Batch, Departments, Roles,
+            Subjects, Calenders, Batch, Departments, Roles, User,
             isLoading,
             handleSignIn, handleSignUp, signOut,
             session,

@@ -1,4 +1,5 @@
 import { useAuth } from '@/components/AuthContext'
+import { useRolePrivileges } from '@/hooks/useRolePrivileges'
 import { supabase } from '@/utils/supbase/supabaseClient'
 import { useEffect, useRef } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
@@ -19,49 +20,27 @@ export const DashboardLayout = () => {
 
 function IsAuthenticated({ children }: { children: React.ReactNode }): JSX.Element {
     const path = useLocation().pathname
-    const { session, isLoading, Roles } = useAuth()
-    async function handleVisual() {
-        const res = await supabase.from('users').select('user_roles(*)').eq('auth_user_id', session?.user?.id)
-        const data = res.data
-        if (Array.isArray(data)) {
-            Roles.setRole(data[0].user_roles as any)
-            sessionStorage.setItem('privilege', JSON.stringify(data[0].user_roles))
-        }
-    }
-    useEffect(() => {
-        handleVisual()
-    }, [])
+    const { session, isLoading, User } = useAuth()
+    const RoleControls = useRolePrivileges(User)
+
     if (isLoading) return <></>
     else if (session) {
-        if (path === '/dashboard' || path === '/dashboard/') return <Navigate to="/dashboard/student" />
-        switch (Roles.userRole?.authorization_level) {
-            case 0: return (<>{children}</>)
-            case 1: return (<>{children}</>)
-            case 2:
-        }
+        if (path === '/dashboard' || path === '/dashboard/') return <Navigate to={RoleControls.sideMenu[0]?.url} />
         return (<>{children}</>)
     }
     else return <Navigate to="/login" />
 }
-const sideNavigationMenu = [
-    { url: '/dashboard/student', name: 'Student' },
-    { url: '/dashboard/batch', name: 'Batch' },
-    { url: '/dashboard/department', name: 'Department' },
-    { url: '/dashboard/staff', name: 'Staff' },
-    { url: '/dashboard/subject', name: 'Subject' },
-    { url: '/dashboard/calender', name: 'Calender' },
-]
+
 
 const TopNavigation = () => {
-    const { signOut, } = useAuth()
-
+    const { signOut, User } = useAuth()
+    const RoleControls = useRolePrivileges(User)
     const location = useLocation().pathname
-    const value = sideNavigationMenu.find(item => item.url === location)
+    const value = RoleControls.sideMenu?.find(item => item.url === location)
     const ref = useRef<HTMLDivElement>(null)
     return (
         <header className="flex items-center justify-between h-14 px-4 border-b lg:h-20 gap-4 dark:border-gray-800" ref={ref}>
-            <div>dasdas</div>
-            <h1 className="font-semibold text-lg lg:text-2xl ">{value?.name}</h1>
+            <h1 className="font-semibold text-lg lg:text-2xl ">{User?.data?.name} | {User?.role?.name}</h1>
             <div className='flex items-center gap-2'>
                 <button
                     className="relative inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground rounded-full border border-gray-200 w-8 h-8 dark:border-gray-800"
@@ -87,8 +66,10 @@ const TopNavigation = () => {
     )
 }
 const SideNavigation = () => {
+    const { User } = useAuth()
+    const RoleControls = useRolePrivileges(User)
     const location = useLocation().pathname
-    const item = sideNavigationMenu.find(item => item.url === location)
+    const item = RoleControls.sideMenu.find(item => item.url === location)
 
     return (
         <aside className={`flex flex-col sticky top-0 h-screen w-40 bg-gray-100 text-gray-800 p-4  overflow-hidden`}
@@ -98,7 +79,7 @@ const SideNavigation = () => {
             </div>
             <aside className=" flex flex-col gap-2">
                 {
-                    sideNavigationMenu.map(({ url, name }, index) =>
+                    RoleControls.sideMenu.map(({ url, name }, index) =>
                         <Link to={url} key={index}>
                             <nav  >
                                 <button className={`w-full flex items-center space-x-2 
