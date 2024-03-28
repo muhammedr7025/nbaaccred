@@ -1,3 +1,4 @@
+import TokenVerify from "@/pages/public/email";
 import Login from "@/pages/public/login";
 import { PublicLayout } from "@/pages/public/publicLayout";
 import SignUp from "@/pages/public/signUp";
@@ -14,6 +15,10 @@ const publicRoutes: RouteObject = {
         {
             path: 'signup',
             element: <SignUp />
+        },
+        {
+            path: 'email',
+            element: <TokenVerify />
         }
     ]
 }

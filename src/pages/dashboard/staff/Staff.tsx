@@ -92,7 +92,7 @@ const TopBarSection = ({ openModal }: { openModal: () => void }) => {
 }
 const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any }) => {
     const [isAdvisor, setIsAdvisor] = React.useState(dataReceived?.is_advisor ?? false)
-    const { departments, genders, roles, staff, batchs } = useAuth()
+    const { departments, genders, roles, staff, batchs, Departments, Batch } = useAuth()
     function closer() {
         close()
         getStaff()
@@ -114,12 +114,11 @@ const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any
                     <Input id='mobile' placeholder='Enter mobile' required defaultValue={dataReceived?.phone}>Mobile</Input>
                     <Select id='gender' header='Gender' defaultValue={dataReceived?.gender}>
                         {genders?.map((item) => <Option id={`${item?.id}`} value={item?.name} key={item?.id} >{item?.name.toUpperCase()}</Option>)}
-
                     </Select>
                 </div>
                 <div className='flex w-full gap-3'>
                     <Select id='department' header='Department' required defaultValue={dataReceived?.department}>
-                        {departments?.map((item) => <Option id={`${item?.id}`} value={item?.name as string} key={item?.id} >{item?.name}</Option>)}
+                        {Departments.data?.map((item) => <Option id={`${item?.id}`} value={item?.name as string} key={item?.id} >{item?.name}</Option>)}
                     </Select>
 
                     <Select id='advisor' header='Is Advisor' onChange={handleIsAdvisor} defaultValue={dataReceived?.is_advisor ? 'yes' : 'no'}>
@@ -129,7 +128,7 @@ const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any
                 </div>
                 <div className='flex w-full gap-3'>
                     {isAdvisor && <Select id='batch' header='Batch Incharge' required={isAdvisor}>
-                        {batchs?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{`${item.start_year}-${item.end_year}`}</Option>)}
+                        {Batch.data?.map((item) => <Option id={`${item?.id}`} key={item?.id} >{`${item.start_year}-${item.end_year}`}</Option>)}
                     </Select>}
                     <div className='flex flex-1'></div>
                 </div>
@@ -148,7 +147,6 @@ const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any
 const TableSection = ({ staff, }: any) => {
     const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Staff" })
     const { Modal: ModalEdit, open: openEdit, close: closeEdit } = useModal({ fadeTime: 300, title: "Edit Staff " })
-
     const [item, setItem] = React.useState({} as any)
     return (
         <>

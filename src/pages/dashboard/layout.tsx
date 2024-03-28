@@ -1,5 +1,6 @@
 import { useAuth } from '@/components/AuthContext'
-import { useRef } from 'react'
+import { supabase } from '@/utils/supbase/supabaseClient'
+import { useEffect, useRef } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 export const DashboardLayout = () => {
 
@@ -18,10 +19,26 @@ export const DashboardLayout = () => {
 
 function IsAuthenticated({ children }: { children: React.ReactNode }): JSX.Element {
     const path = useLocation().pathname
-    const { session, isLoading } = useAuth()
+    const { session, isLoading, Roles } = useAuth()
+    async function handleVisual() {
+        const res = await supabase.from('users').select('user_roles(*)').eq('auth_user_id', session?.user?.id)
+        const data = res.data
+        if (Array.isArray(data)) {
+            Roles.setRole(data[0].user_roles as any)
+            sessionStorage.setItem('privilege', JSON.stringify(data[0].user_roles))
+        }
+    }
+    useEffect(() => {
+        handleVisual()
+    }, [])
     if (isLoading) return <></>
     else if (session) {
         if (path === '/dashboard' || path === '/dashboard/') return <Navigate to="/dashboard/student" />
+        switch (Roles.userRole?.authorization_level) {
+            case 0: return (<>{children}</>)
+            case 1: return (<>{children}</>)
+            case 2:
+        }
         return (<>{children}</>)
     }
     else return <Navigate to="/login" />
@@ -36,13 +53,14 @@ const sideNavigationMenu = [
 ]
 
 const TopNavigation = () => {
-    const { signOut } = useAuth()
+    const { signOut, } = useAuth()
+
     const location = useLocation().pathname
     const value = sideNavigationMenu.find(item => item.url === location)
     const ref = useRef<HTMLDivElement>(null)
     return (
         <header className="flex items-center justify-between h-14 px-4 border-b lg:h-20 gap-4 dark:border-gray-800" ref={ref}>
-            <div></div>
+            <div>dasdas</div>
             <h1 className="font-semibold text-lg lg:text-2xl ">{value?.name}</h1>
             <div className='flex items-center gap-2'>
                 <button

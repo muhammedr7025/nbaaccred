@@ -1,6 +1,7 @@
 import useBatch, { batchHookType } from "@/hooks/useBatch";
 import useCalenders, { calenderHookType } from "@/hooks/useCalender";
 import useDepartments, { departmentHookType } from "@/hooks/useDepartment";
+import { roleHookType, useRoles } from "@/hooks/useRoles";
 import useSubjects, { subjectHookType } from "@/hooks/useSubjects";
 import { getStaff } from "@/pages/dashboard/staff";
 import { batch, department } from "@/utils/supbase/supabase";
@@ -40,6 +41,7 @@ type IAuthContext = {
     Calenders: calenderHookType
     Batch: batchHookType
     Departments: departmentHookType
+    Roles: roleHookType
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -47,6 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const Calenders = useCalenders()
     const Batch = useBatch()
     const Departments = useDepartments()
+    const Roles = useRoles()
     const [isLoading, setLoading] = useState(true)
     const [session, setSession] = useState<Session | null>(null)
     const [batchs, setBatch] = useState<batch['Row'][]>([])
@@ -62,9 +65,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (session) {
             setLoading(false)
             Batch.fetch()
-            getDepartments().then(setDepartments)
+            Departments.fetch()
+            Roles.fetch()
             getGenders().then(setGenders)
-            getRoles().then(setRoles)
             getStaff().then(staff.set)
         }
     }, [session])
@@ -113,7 +116,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     return (
         <AuthContext.Provider value={{
-            Subjects, Calenders, Batch, Departments,
+            Subjects, Calenders, Batch, Departments, Roles,
             isLoading,
             handleSignIn, handleSignUp, signOut,
             session,

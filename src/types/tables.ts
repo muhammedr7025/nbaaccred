@@ -12,7 +12,12 @@ export type staffType = {
 export type studentType = {
 
 }
-
+export type UserRoleType = {
+    created_at?: string
+    id?: number
+    name: string
+    authorization_level: number
+}
 export type BatchType = {
     id?: number
     end_year?: string

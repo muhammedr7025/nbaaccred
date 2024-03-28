@@ -139,7 +139,7 @@ export const Student = () => {
     )
 }
 const ModalBox = ({ close, setStudent, data: dataReceived }: { close: () => void, setStudent: React.Dispatch<React.SetStateAction<any[]>>, data?: any }) => {
-    const { batchs, departments, genders, roles } = useAuth()
+    const { batchs, departments, genders, roles, Departments, Batch } = useAuth()
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const e: any = event
@@ -234,11 +234,11 @@ const ModalBox = ({ close, setStudent, data: dataReceived }: { close: () => void
                 </div>
                 <div className='flex w-full gap-3' defaultValue={'0'}>
                     <Select id='department' header='Department' defaultValue={dataReceived?.department}>
-                        {departments?.map((item) => <Option id={`${item?.id}`} value={item?.name as string} key={item?.id} >{item?.name}</Option>)}
+                        {Departments.data?.map((item) => <Option id={`${item?.id}`} value={item?.name as string} key={item?.id} >{item?.name}</Option>)}
                     </Select>
                     <Select id='batch' header='Batch' placeholder='Selector' defaultValue={dataReceived?.batch}>
                         {
-                            batchs?.map((item) => <Option id={`${item.id}`} value={item.start_year + '-' + item.end_year} key={item.id} >{item.start_year + ' - ' + item.end_year}</Option>)
+                            Batch.data?.map((item) => <Option id={`${item.id}`} value={item.start_year + '-' + item.end_year} key={item.id} >{item.start_year + ' - ' + item.end_year}</Option>)
                         }
                     </Select>
                 </div>
