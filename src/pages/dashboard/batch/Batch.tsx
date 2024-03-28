@@ -10,9 +10,3 @@ export const Batch = () => {
     </BoxLayout2>
   );
 };
-{/* <BoxLayout
-topBar={<BatchTopbar />}
-table={<BatchTable />}
-pagination={<></>}
-modal={<></>}
-/> */}

@@ -1,5 +1,6 @@
 import useBatch, { batchHookType } from "@/hooks/useBatch";
 import useCalenders, { calenderHookType } from "@/hooks/useCalender";
+import useDepartments, { departmentHookType } from "@/hooks/useDepartment";
 import useSubjects, { subjectHookType } from "@/hooks/useSubjects";
 import { getStaff } from "@/pages/dashboard/staff";
 import { batch, department } from "@/utils/supbase/supabase";
@@ -38,12 +39,14 @@ type IAuthContext = {
     Subjects: subjectHookType
     Calenders: calenderHookType
     Batch: batchHookType
+    Departments: departmentHookType
 }
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const Subjects = useSubjects()
     const Calenders = useCalenders()
     const Batch = useBatch()
+    const Departments = useDepartments()
     const [isLoading, setLoading] = useState(true)
     const [session, setSession] = useState<Session | null>(null)
     const [batchs, setBatch] = useState<batch['Row'][]>([])
@@ -110,7 +113,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     return (
         <AuthContext.Provider value={{
-            Subjects, Calenders, Batch,
+            Subjects, Calenders, Batch, Departments,
             isLoading,
             handleSignIn, handleSignUp, signOut,
             session,

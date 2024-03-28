@@ -20,7 +20,15 @@ export type BatchType = {
     created_at?: string
 }
 
-export type departmentType = {}
+export type DepartmentType = {
+    code?: string | null
+    created_at?: string
+    id?: number
+    mission_url?: string | null
+    name?: string | null
+    updated_at?: string | null
+    vision_url?: string | null
+}
 
 
 export type SubjectType = {

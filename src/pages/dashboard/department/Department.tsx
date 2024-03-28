@@ -13,7 +13,7 @@ import {
   Table,
   Thead,
 } from "@/components/table/table";
-import { BoxLayout } from "../boxLayout";
+import { BoxLayout, BoxLayout2 } from "../boxLayout";
 import { useModal } from "@/components/modal";
 import { Input } from "@/components/inputs/input";
 import { departmentType, getDepartmentsFromDB, useAuth } from "@/components/AuthContext";
@@ -25,6 +25,8 @@ import { Helmet } from "react-helmet";
 import { convertCsvToJson } from "@/utils/convertCsvToJson";
 import { bulkImportdepartments } from "./bulkImport";
 import editIcon from '@assets/svg/editIcon.svg';
+import TopBarSection from "./DepartmentTopBar";
+import DepartmentTable from "./DepartmentTable";
 const header = [
   "Code",
   "Department",
@@ -40,53 +42,14 @@ export const Department = () => {
     );
   }
   return (
-    <BoxLayout
-      topBar={<TopBarSection openModal={open} />}
-      table={<TableSection />}
-      pagination={<Pagination start={1} total={5} />}
-      modal={<ModalLayout />}
-    />
-  );
-};
-const TopBarSection = ({ openModal }: { openModal: () => void }) => {
-  const { setDepartments } = useAuth()
-  const { Modal: ModalImport, open: openImport, close: closeImport } = useModal({ fadeTime: 300, title: "Import Student Data" })
+    <BoxLayout2>
+      <TopBarSection key="TopBar" />
+      <DepartmentTable key="Table" />
+    </BoxLayout2>
 
-  function reload() {
-    getDepartmentsFromDB().then(data => setDepartments(data as departmentType[]))
-  }
-  return (
-    <TopBar name="Department">
-      {/* <Helmet>
-        <title>Department</title>
-        <meta name="description" content="Department List" />
-      </Helmet> */}
-      <Button onClick={reload}>Reload</Button>
-      <Button onClick={openModal}>Add Department</Button>
-      <Button onClick={openImport}>Import</Button>
-      {createPortal(
-        <ModalImport>
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            const file = e.currentTarget['import'].files[0]
-            convertCsvToJson(file).then((data) => {
-              bulkImportdepartments(data)
-            })
-          }} className='flex flex-col gap-3 pt-5'>
-            <Input name='import' type="file" />
-            <Button type='submit'>Import</Button>
-          </form>
-        </ModalImport>
-        ,
-        document.body
-      )}
-      {/* <Button className="flex gap-2">
-        <DownloadIcon />
-        CSV
-      </Button>  */}
-    </TopBar>
   );
 };
+
 const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any }) => {
   const { setDepartments } = useAuth()
 
@@ -117,108 +80,108 @@ const ModalBox = ({ close, data: dataReceived }: { close: () => void, data?: any
     </form>
   );
 };
-const TableSection = () => {
-  function downloadMission(url: string | null) {
-    return () => {
-      handleDownload('mission', url)
-    }
-  }
-  function downloadVision(url: string | null) {
-    return () => {
-      handleDownload('vision', url)
-    }
-  }
-  const { departments } = useAuth()
-  const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Department" })
-  const { Modal: ModalEdit, open: openEdit, close: closeEdit, } = useModal({ fadeTime: 300, title: "Edit Department" })
-  const [item, setItem] = useState({} as any)
-  return (
-    <>
-      <Table>
-        <Thead>
-          <THeadRow>
-            {header.map((item, index) => (
-              <THeadCell key={index}>{item}</THeadCell>
-            ))}
-            <THeadCell>
-              <div className="flex w-full items-center justify-center">
-                Mission
-              </div>
-            </THeadCell>
-            <THeadCell>
-              <div className="flex w-full items-center justify-center">
-                Vision
-              </div>
-            </THeadCell>
-            <THeadCell>
-              <div className="flex w-full items-center justify-center">
-                Action
-              </div>
-            </THeadCell>
-          </THeadRow>
-        </Thead>
-        <TBody>
-          {departments?.map((item) => (
-            <TBodyRow key={item?.id}>
-              <TBodyCell className="">{item?.code}</TBodyCell>
-              <TBodyCell className="">{item?.name}</TBodyCell>
-              <TBodyCell >
-                <div className="flex w-full items-center justify-center">
+// const TableSection = () => {
+//   function downloadMission(url: string | null) {
+//     return () => {
+//       handleDownload('mission', url)
+//     }
+//   }
+//   function downloadVision(url: string | null) {
+//     return () => {
+//       handleDownload('vision', url)
+//     }
+//   }
+//   const { departments } = useAuth()
+//   const { Modal: ModalDelete, open: openDelete, close: closeDelete, } = useModal({ fadeTime: 300, title: "Delete Department" })
+//   const { Modal: ModalEdit, open: openEdit, close: closeEdit, } = useModal({ fadeTime: 300, title: "Edit Department" })
+//   const [item, setItem] = useState({} as any)
+//   return (
+//     <>
+//       <Table>
+//         <Thead>
+//           <THeadRow>
+//             {header.map((item, index) => (
+//               <THeadCell key={index}>{item}</THeadCell>
+//             ))}
+//             <THeadCell>
+//               <div className="flex w-full items-center justify-center">
+//                 Mission
+//               </div>
+//             </THeadCell>
+//             <THeadCell>
+//               <div className="flex w-full items-center justify-center">
+//                 Vision
+//               </div>
+//             </THeadCell>
+//             <THeadCell>
+//               <div className="flex w-full items-center justify-center">
+//                 Action
+//               </div>
+//             </THeadCell>
+//           </THeadRow>
+//         </Thead>
+//         <TBody>
+//           {departments?.map((item) => (
+//             <TBodyRow key={item?.id}>
+//               <TBodyCell className="">{item?.code}</TBodyCell>
+//               <TBodyCell className="">{item?.name}</TBodyCell>
+//               <TBodyCell >
+//                 <div className="flex w-full items-center justify-center">
 
-                  {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
-                    <DownloadIcon />
-                  </div> :
-                    <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
-                  }
-                </div>
-              </TBodyCell>
-              <TBodyCell >
-                <div className="flex w-full items-center justify-center">
+//                   {item?.mission_url ? <div className="cursor-pointer" onClick={downloadMission(item?.mission_url)}>
+//                     <DownloadIcon />
+//                   </div> :
+//                     <UploadSection bucketName="mission" name={item?.name} code={item?.code} id={item?.id} />
+//                   }
+//                 </div>
+//               </TBodyCell>
+//               <TBodyCell >
+//                 <div className="flex w-full items-center justify-center">
 
-                  {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
-                    <DownloadIcon />
-                  </div> :
-                    <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
-                  }
-                </div>
-              </TBodyCell>
-              <TBodyCell >
-                <div className="flex w-full items-center justify-center gap-5">
-                  <button className='cursor-pointer ' onClick={() => {
-                    setItem(item)
-                    openEdit()
-                  }}>
-                    <img src={editIcon} alt="edit" />
-                  </button>
-                  <button className='cursor-pointer ' onClick={() => {
-                    setItem(item)
-                    openDelete()
-                  }}>
-                    <img src={deleteIcon} alt="edit" />
-                  </button>
+//                   {item?.vision_url ? <div className="cursor-pointer" onClick={downloadVision(item?.vision_url)}>
+//                     <DownloadIcon />
+//                   </div> :
+//                     <UploadSection bucketName="vision" name={item?.name} code={item?.code} id={item?.id} />
+//                   }
+//                 </div>
+//               </TBodyCell>
+//               <TBodyCell >
+//                 <div className="flex w-full items-center justify-center gap-5">
+//                   <button className='cursor-pointer ' onClick={() => {
+//                     setItem(item)
+//                     openEdit()
+//                   }}>
+//                     <img src={editIcon} alt="edit" />
+//                   </button>
+//                   <button className='cursor-pointer ' onClick={() => {
+//                     setItem(item)
+//                     openDelete()
+//                   }}>
+//                     <img src={deleteIcon} alt="edit" />
+//                   </button>
 
-                </div>
-              </TBodyCell>
-            </TBodyRow>
-          ))}
-        </TBody>
-      </Table>
+//                 </div>
+//               </TBodyCell>
+//             </TBodyRow>
+//           ))}
+//         </TBody>
+//       </Table>
 
-      {createPortal(
-        <>
-          <ModalEdit>
-            <ModalBox close={closeEdit} data={item} />
-          </ModalEdit>
-          <ModalDelete>
-            <DeleteModal close={closeDelete} id={item.id} />
-          </ModalDelete>
-        </>
-        ,
-        document.body
-      )}
-    </>
-  );
-};
+//       {createPortal(
+//         <>
+//           <ModalEdit>
+//             <ModalBox close={closeEdit} data={item} />
+//           </ModalEdit>
+//           <ModalDelete>
+//             <DeleteModal close={closeDelete} id={item.id} />
+//           </ModalDelete>
+//         </>
+//         ,
+//         document.body
+//       )}
+//     </>
+//   );
+// };
 function UploadSection({ bucketName, name, code, id }: { bucketName: string, name: string | null, code: string | null, id: number | string }) {
   const { setDepartments } = useAuth()
   if (!bucketName && !name && !code && !id) return
